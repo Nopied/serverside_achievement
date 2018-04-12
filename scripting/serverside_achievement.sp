@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include <serverside_achievement>
 
 public Plugin myinfo=
 {
@@ -7,3 +8,8 @@ public Plugin myinfo=
 	description="",
 	version="0.0",
 };
+
+public void OnPluginStart()
+{
+
+}
