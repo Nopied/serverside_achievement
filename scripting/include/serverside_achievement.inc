@@ -3,8 +3,8 @@
 #endif
 #define _SERVERSIDE_ACHIEVEMENT_included
 
-methodmap SAchievementDatabase < Database {
-    public SAchievementDatabase()
+methodmap SADatabase < Database {
+    public SADatabase()
     {
 
     }
