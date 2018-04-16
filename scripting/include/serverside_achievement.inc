@@ -40,6 +40,6 @@ public void TempErrorCheck(Database db, DBResultSet results, const char[] error,
 {
     if(results == null || error[0] != '\0')
     {
-        SetFailState("[SA] Ahh.. Something is wrong. check your DB. ERROR: %s", error);
+        SetFailState("[SA] Ahh.. Something is wrong in TempErrorCheck. check your DB. ERROR: %s", error);
     }
 }
