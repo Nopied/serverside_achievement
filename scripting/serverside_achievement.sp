@@ -13,7 +13,7 @@ SADatabase g_Database;
 
 public void OnPluginStart()
 {
-	SADatabase = new SADatabase(ConnectionCheck);
+	g_Database = new SADatabase(ConnectionCheck);
 }
 
 
