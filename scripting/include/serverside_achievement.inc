@@ -12,7 +12,7 @@ methodmap SADatabase < Database {
         DBDriver driver;
         char driverString[10];
 
-        db.Connect(callback, SADATABASE_CONFIG_NAME);
+        Database.Connect(callback, SADATABASE_CONFIG_NAME, db);
         driver = db.Driver;
         driver.GetIdentifier(driverString, sizeof(driverString));
 

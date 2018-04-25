@@ -4,7 +4,7 @@
 public Plugin myinfo=
 {
 	name="SERVERSIDE ACHIEVEMENT",
-	author="POTRY Developer Team (LOL)",
+	author="POTRY Developer Team",
 	description="",
 	version="0.0",
 };
@@ -22,5 +22,9 @@ public void ConnectionCheck(Database db, const char[] error, any data)
 	if(error[0] != '\0')
     {
         SetFailState("[SA] Ahh.. Something is wrong in ConnectionCheck. check your DB. ERROR: %s", error);
+    }
+	else
+    {
+        db = data;
     }
 }
