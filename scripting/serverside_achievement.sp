@@ -25,6 +25,6 @@ public void ConnectionCheck(Database db, const char[] error, any data)
     }
 	else
     {
-        db = data;
+		data = db;
     }
 }
