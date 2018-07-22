@@ -6,14 +6,21 @@
 #define SADATABASE_CONFIG_NAME "serverside_achievement"
 
 methodmap SADatabase < Database {
-    public SADatabase(SQLConnectCallback callback)
+    public SADatabase()
     {
-        Database db;
+        Database database;
         DBDriver driver;
         char driverString[10];
+        char errorMessage[64]
 
-        Database.Connect(callback, SADATABASE_CONFIG_NAME, db);
-        driver = db.Driver;
+        database = SQL_Connect(SADATABASE_CONFIG_NAME, true, errorMessage, sizeof(errorMessage));
+
+        if(database == null)
+        {
+            SetFailState("[SA] Can't connect to DB! Error: %s", errorMessage);
+        }
+
+        driver = database.Driver;
         driver.GetIdentifier(driverString, sizeof(driverString));
 
         if(!StrEqual("mysql", driverString))
@@ -35,11 +42,24 @@ methodmap SAchievementInfo < KeyValues {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
+/*
+public void ConnectionCheck(Database db, const char[] error, any data)
+{
+	if(db == null || error[0] != '\0')
+    {
+        SetFailState("[SA] Ahh.. Something is wrong in ConnectionCheck. check your DB. ERROR: %s", error);
+    }
+	else
+    {
+		data = db;
+    }
+}
+*/
 
-public void TempErrorCheck(Database db, DBResultSet results, const char[] error, any data)
+public void QueryErrorCheck(Database db, DBResultSet results, const char[] error, any data)
 {
     if(results == null || error[0] != '\0')
     {
-        SetFailState("[SA] Ahh.. Something is wrong in TempErrorCheck. check your DB. ERROR: %s", error);
+        SetFailState("[SA] Ahh.. Something is wrong in QueryErrorCheck. check your DB. ERROR: %s", error);
     }
 }
