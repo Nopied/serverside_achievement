@@ -28,9 +28,10 @@ methodmap SADatabase < Database {
             SetFailState("[SA] This plugin is only allowed to use mysql!");
         }
 
-        db.SetCharset("utf8");
-        db.Query(TempErrorCheck, "CREATE TABLE IF NOT EXISTS `serverside_achievement` (`steam_id` varchar(25) NOT NULL DEFAULT '0', UNIQUE (`steam_id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
-        return view_as<SADatabase>(db);
+        database.SetCharset("utf8");
+        database.Query(QueryErrorCheck, "CREATE TABLE IF NOT EXISTS `serverside_achievement`(`steam_id` varchar(25) NOT NULL DEFAULT '0', UNIQUE (`steam_id`), `completed_time` DATETIME, `last_save_time` DATETIME, `completed` BOOL NOT NULL DEFAULT '0', `is_completed_by_force` BOOL NOT NULL DEFAULT '0') ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;");
+
+        return view_as<SADatabase>(database);
     }
 }
 
