@@ -29,7 +29,7 @@ methodmap SADatabase < Database {
         }
 
         database.SetCharset("utf8");
-        database.Query(QueryErrorCheck, "CREATE TABLE IF NOT EXISTS `serverside_achievement`(`steam_id` varchar(25) NOT NULL DEFAULT '0', UNIQUE (`steam_id`), `completed_time` DATETIME, `last_save_time` DATETIME, `completed` BOOL NOT NULL DEFAULT '0', `is_completed_by_force` BOOL NOT NULL DEFAULT '0') ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;");
+        database.Query(QueryErrorCheck, "CREATE TABLE IF NOT EXISTS `serverside_achievement`(`steam_id` varchar(25) NOT NULL DEFAULT '0', UNIQUE (`steam_id`), `achievement_id` varchar(64) NOT NULL DEFAULT '0', UNIQUE (`achievement_id`), `completed_time` DATETIME, `last_save_time` DATETIME, `completed` BOOL NOT NULL DEFAULT '0', `is_completed_by_force` BOOL NOT NULL DEFAULT '0', `process_integer` BIGINT NOT NULL DEFAULT '0') ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;");
 
         return view_as<SADatabase>(database);
     }
