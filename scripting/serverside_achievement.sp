@@ -29,7 +29,7 @@ public void SetComplete(int client, const char[] achievementId, bool value, bool
 	FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S");
 	GetClientAuthId(client, AuthId_SteamID64, authId, sizeof(authId));
 
-	Format(queryStr, sizeof(queryStr), "INSERT INTO `serverside_achievement` (`steam_id`, `achievement_id`) SELECT '%s', '%s' WHERE NOT EXISTS (SELECT * FROM `serverside_achievement` WHERE `steam_id` = '%s' AND `achievement_id` = '%s');", authId, achievementId, authId, achievementId);
+	Format(queryStr, sizeof(queryStr), "REPLACE INTO `serverside_achievement` SET `steam_id` = '%s',`achievement_id` = '%s';", authId, achievementId);
 	g_Database.Query(QueryErrorCheck, queryStr);
 
 	Format(queryStr, sizeof(queryStr), "UPDATE `serverside_achievement` SET `completed` = %s WHERE `steam_id` = '%s' AND `achievement_id` = '%s';", value ? "1" : "0", authId, achievementId);
