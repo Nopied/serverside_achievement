@@ -44,4 +44,13 @@ public void SetComplete(int client, const char[] achievementId, bool value, bool
 		Format(queryStr, sizeof(queryStr), "UPDATE `serverside_achievement` SET `is_completed_by_force` = %s WHERE `steam_id` = '%s' AND `achievement_id` = '%s';", forced ? "1" : "0", authId, achievementId);
 		g_Database.Query(QueryErrorCheck, queryStr);
 	}
+
+	RecordSaveTime(authId, achievementId, timeStr);
+}
+
+public void RecordSaveTime(const char[] authId, const char[] achievementId, const char[] saveTimeString)
+{
+	char queryStr[256];
+	Format(queryStr, sizeof(queryStr), "UPDATE `serverside_achievement` SET `last_save_time` = '%s' WHERE `steam_id` = '%s' AND `achievement_id` = '%s';", saveTimeString, authId, achievementId);
+	g_Database.Query(QueryErrorCheck, queryStr);
 }
