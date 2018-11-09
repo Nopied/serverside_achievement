@@ -1,17 +1,29 @@
 #include <sourcemod>
 #include <serverside_achievement>
 
+#include "serverside_achievement/database.sp"
+#include "serverside_achievement/global_vars.sp"
+
 public Plugin myinfo=
 {
 	name="SERVERSIDE ACHIEVEMENT",
-	author="POTRY Developer Team",
+	author="Nopied",
 	description="",
-	version="0.0",
+	version="20181108",
 };
 
-SADatabase g_Database;
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	// serverside_achievement/database.sp
+	DB_Native_Init();
+}
 
 public void OnPluginStart()
+{
+	// g_Database = new SADatabase();
+}
+
+public void OnMapStart()
 {
 	g_Database = new SADatabase();
 }
@@ -19,54 +31,29 @@ public void OnPluginStart()
 public void OnClientPostAdminCheck(int client)
 {
 	if(IsFakeClient(client)) return;
+	char authId[25];
+	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 
-	// SetComplete(client, "test", true, false);
-	// LogMessage("%N is %s", client, GetComplete(client, "test", false) ? "completed" : "no!!!!");
+	SetComplete(authId, "test", true, false);
+	LogMessage("%N is %s", client, GetComplete(authId, "test", false) ? "completed" : "no!!!!");
 }
 
-public bool GetComplete(int client, const char[] achievementId, bool forced)
+public bool GetComplete(const char[] authId, const char[] achievementId, bool forced)
 {
-	char authId[24], queryStr[256];
-	GetClientAuthId(client, AuthId_SteamID64, authId, sizeof(authId));
-	Format(queryStr, sizeof(queryStr), "SELECT `%s` FROM `serverside_achievement` WHERE `steam_id` = '%s' AND `achievement_id` = '%s'", forced ? "is_completed_by_force" : "completed", authId, achievementId);
-
-	DBResultSet query = SQL_Query(g_Database, queryStr);
-
-	if(!query.FetchRow()) return false;
-
-	int result = query.FetchInt(0);
-	delete query;
-	return result > 0;
+	forced = g_Database.GetValue(authId, achievementId, "is_completed_by_force") > 0 ? true : false;
+	return g_Database.GetValue(authId, achievementId, "completed") > 1;
 }
 
-public void SetComplete(int client, const char[] achievementId, bool value, bool forced)
+public void SetComplete(const char[] authId, const char[] achievementId, bool value, bool forced)
 {
-	char authId[24], queryStr[256], timeStr[64];
-	FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S");
-	GetClientAuthId(client, AuthId_SteamID64, authId, sizeof(authId));
+	char temp[64];
 
-	Format(queryStr, sizeof(queryStr), "REPLACE INTO `serverside_achievement` SET `steam_id` = '%s',`achievement_id` = '%s';", authId, achievementId);
-	g_Database.Query(QueryErrorCheck, queryStr);
+	IntToString(value ? 1 : 0, temp, 2);
+	g_Database.SetValue(authId, achievementId, "completed", temp);
 
-	Format(queryStr, sizeof(queryStr), "UPDATE `serverside_achievement` SET `completed` = %s WHERE `steam_id` = '%s' AND `achievement_id` = '%s';", value ? "1" : "0", authId, achievementId);
-	g_Database.Query(QueryErrorCheck, queryStr);
+	IntToString(forced ? 1 : 0, temp, 2);
+	g_Database.SetValue(authId, achievementId, "is_completed_by_force", temp);
 
-	if(value) {
-		Format(queryStr, sizeof(queryStr), "UPDATE `serverside_achievement` SET `completed_time` = '%s' WHERE `steam_id` = '%s' AND `achievement_id` = '%s';", timeStr, authId, achievementId);
-		g_Database.Query(QueryErrorCheck, queryStr);
-	}
-
-	if(forced) {
-		Format(queryStr, sizeof(queryStr), "UPDATE `serverside_achievement` SET `is_completed_by_force` = %s WHERE `steam_id` = '%s' AND `achievement_id` = '%s';", forced ? "1" : "0", authId, achievementId);
-		g_Database.Query(QueryErrorCheck, queryStr);
-	}
-
-	RecordSaveTime(authId, achievementId, timeStr);
-}
-
-public void RecordSaveTime(const char[] authId, const char[] achievementId, const char[] saveTimeString)
-{
-	char queryStr[256];
-	Format(queryStr, sizeof(queryStr), "UPDATE `serverside_achievement` SET `last_save_time` = '%s' WHERE `steam_id` = '%s' AND `achievement_id` = '%s';", saveTimeString, authId, achievementId);
-	g_Database.Query(QueryErrorCheck, queryStr);
+	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
+	g_Database.SetValue(authId, achievementId, "completed_time", temp);
 }

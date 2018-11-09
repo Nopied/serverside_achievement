@@ -1,0 +1,1 @@
+SADatabase g_Database;
