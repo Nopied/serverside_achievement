@@ -51,20 +51,24 @@ public int Native_SADatabase_GetValue(Handle plugin, int numParams)
 {
     SADatabase thisDB = GetNativeCell(1);
 
-    char authId[24], achievementId[256], keyString[256], valueString[256], queryStr[256], resultStr[64];
+    char authId[24], achievementId[256], keyString[256], valueString[128], queryStr[256], resultStr[64];
     int buffer = GetNativeCell(5);
     GetNativeString(2, authId, 24);
     GetNativeString(3, achievementId, 128);
     GetNativeString(4, keyString, 128);
-    GetNativeString(5, valueString, 128);
+
     thisDB.Escape(achievementId, achievementId, 256);
     thisDB.Escape(keyString, keyString, 256);
-    thisDB.Escape(valueString, valueString, 256);
 
     Format(queryStr, sizeof(queryStr), "SELECT `%s` FROM `serverside_achievement` WHERE `steam_id` = '%s' AND `achievement_id` = '%s'", keyString, authId, achievementId);
 
     DBResultSet query = SQL_Query(thisDB, queryStr);
-    if(!query.FetchRow()) return -1;
+    if(query == null) return -1;
+    else if(!query.HasResults || !query.FetchRow())
+    {
+        delete query;
+        return -1;
+    }
 
     int result;
     if(buffer > 0)
