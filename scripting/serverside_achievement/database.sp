@@ -51,7 +51,7 @@ public int Native_SADatabase_GetValue(Handle plugin, int numParams)
 {
     SADatabase thisDB = GetNativeCell(1);
 
-    char authId[24], achievementId[256], keyString[256], valueString[128], queryStr[256], resultStr[64];
+    char authId[24], achievementId[256], keyString[256], queryStr[256], resultStr[64];
     int buffer = GetNativeCell(5);
     GetNativeString(2, authId, 24);
     GetNativeString(3, achievementId, 128);

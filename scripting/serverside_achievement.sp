@@ -1,7 +1,10 @@
 #include <sourcemod>
+#include <morecolors>
 #include <serverside_achievement>
 
 #include "serverside_achievement/database.sp"
+#include "serverside_achievement/configs.sp"
+
 #include "serverside_achievement/global_vars.sp"
 
 public Plugin myinfo=
@@ -9,23 +12,31 @@ public Plugin myinfo=
 	name="SERVERSIDE ACHIEVEMENT",
 	author="Nopied",
 	description="",
-	version="20181108",
+	version="20181110",
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	// serverside_achievement/database.sp
 	DB_Native_Init();
+
+	// serverside_achievement/configs.sp
+	KV_Native_Init();
 }
 
 public void OnPluginStart()
 {
 	// g_Database = new SADatabase();
+	LoadTranslations("serverside_achievement");
 }
 
 public void OnMapStart()
 {
 	g_Database = new SADatabase();
+
+	if(g_KeyValue != null)
+		delete g_KeyValue;
+	g_KeyValue = new SAKeyValues();
 }
 
 public void OnClientPostAdminCheck(int client)
@@ -34,8 +45,40 @@ public void OnClientPostAdminCheck(int client)
 	char authId[25];
 	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 
-	SetComplete(authId, "test", true, false);
-	LogMessage("%N is %s", client, GetComplete(authId, "test", false) ? "completed" : "no!!!!");
+	AddProcessMeter(client, authId, "beta_tester", 2);
+}
+
+void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
+{
+	char temp[64];
+	int beforeValue = g_Database.GetValue(authId, achievementId, "process_integer");
+	value += beforeValue;
+	IntToString(value, temp, 64);
+	g_Database.SetValue(authId, achievementId, "process_integer", temp);
+
+	// 프로세스 미터가 컨픽의 맥스 프로세스 미터에 충족하면 도전과제 완료.
+	if(g_KeyValue.GetValue(achievementId, "only_set_by_plugin", KvData_Int) <= 0
+	&& value >= g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int))
+	{
+		SetComplete(authId, "beta_tester", true, false);
+		NoticeCompleteToAll(client, achievementId);
+	}
+}
+
+void NoticeCompleteToAll(int client, char[] achievementId)
+{
+	char achievementName[80], languageId[4];
+	for(int target = 1;  target < MaxClients; target++)
+	{
+		if(!IsClientInGame(target)) continue;
+
+		GetLanguageInfo(GetClientLanguage(target), languageId, 4);
+		SetGlobalTransTarget(target);
+
+		g_KeyValue.SetLanguageSet(achievementId, languageId);
+		g_KeyValue.GetValue("", "name", KvData_String, achievementName, sizeof(achievementName));
+		CPrintToChat(target, "{lime}[SA]{default} %t", "Just Completed Achievement", client, achievementName);
+	}
 }
 
 public bool GetComplete(const char[] authId, const char[] achievementId, bool forced)

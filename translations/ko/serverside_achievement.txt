@@ -1,0 +1,8 @@
+"Phrases"
+{
+    "Just Completed Achievement"
+    {
+        "#format"   "{1:N},{2:s}"
+        "ko"        "{1}님이 도전과제 ''{immortal}{2}{default}''를 달성하였습니다!"
+    }
+}

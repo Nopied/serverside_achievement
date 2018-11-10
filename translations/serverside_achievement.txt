@@ -1,0 +1,8 @@
+"Phrases"
+{
+    "Just Completed Achievement"
+    {
+        "#format"   "{1:N},{2:s}"
+        "en"        "{1} just earned their Achievement ''{immortal}{2}{default}''!"
+    }
+}
