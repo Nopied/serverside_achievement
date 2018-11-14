@@ -50,6 +50,9 @@ public void OnClientPostAdminCheck(int client)
 
 void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
 {
+	if(GetComplete(authId, achievementId, false))
+		return;
+
 	char temp[64];
 	int beforeValue = g_Database.GetValue(authId, achievementId, "process_integer");
 	value += beforeValue;
