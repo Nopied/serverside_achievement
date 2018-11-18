@@ -119,11 +119,7 @@ public void OnMapStart()
 
 public void OnClientPostAdminCheck(int client)
 {
-	if(IsFakeClient(client)) return;
-	char authId[25];
-	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
-
-	AddProcessMeter(client, authId, "beta_tester", 1);
+	// Nothing.
 }
 
 void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
