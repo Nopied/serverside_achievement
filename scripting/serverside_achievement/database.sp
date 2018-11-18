@@ -29,6 +29,8 @@ methodmap SADatabase < Database {
     public native int GetValue(const char[] authid, const char[] achievementId, const char[] key, char[] value = "", int buffer = 0);
     public native void SetValue(const char[] authid, const char[] achievementId, const char[] key, const char[] value);
 
+    public native DBResultSet GetValues(const char[] authid);
+
     public native int GetSavedTime(const char[] authid);
 }
 
@@ -44,6 +46,7 @@ void DB_Native_Init()
 {
     CreateNative("SADatabase.GetValue", Native_SADatabase_GetValue);
     CreateNative("SADatabase.SetValue", Native_SADatabase_SetValue);
+    CreateNative("SADatabase.GetValues", Native_SADatabase_GetValues);
     CreateNative("SADatabase.GetSavedTime", Native_SADatabase_GetSavedTime);
 }
 
@@ -106,6 +109,18 @@ public int Native_SADatabase_SetValue(Handle plugin, int numParams)
     "INSERT INTO `serverside_achievement` (`steam_id`, `achievement_id`, `%s`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE `steam_id` = '%s',  `achievement_id` = '%s', `%s` = '%s', `last_saved_time` = '%s'",
     keyString, authId, achievementId, valueString, authId, achievementId, keyString, valueString, timeStr);
     SQL_FastQuery(thisDB, queryStr, strlen(queryStr)+1);
+}
+
+public int Native_SADatabase_GetValues(Handle plugin, int numParams)
+{
+    SADatabase thisDB = GetNativeCell(1);
+
+    char authId[24], queryStr[256];
+    GetNativeString(2, authId, 24);
+
+    Format(queryStr, sizeof(queryStr), "SELECT * FROM `serverside_achievement` WHERE `steam_id` = '%s'", authId);
+    DBResultSet query = SQL_Query(thisDB, queryStr);
+    return view_as<int>(query);
 }
 
 public int Native_SADatabase_GetSavedTime(Handle plugin, int numParams)
