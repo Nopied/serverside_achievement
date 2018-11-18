@@ -68,7 +68,7 @@ void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
 	if(g_KeyValue.GetValue(achievementId, "only_set_by_plugin", KvData_Int) <= 0
 	&& value >= g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int))
 	{
-		SetComplete(authId, "beta_tester", true, false);
+		SetComplete(authId, achievementId, true, false);
 		NoticeCompleteToAll(client, achievementId);
 	}
 }
