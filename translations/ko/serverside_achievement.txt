@@ -5,4 +5,19 @@
         "#format"   "{1:N},{2:s}"
         "ko"        "{1}님이 도전과제 ''{immortal}{2}{default}''를 달성하였습니다!"
     }
+
+    "My List Menu Title"
+    {
+        "ko"    "내 도전과제 리스트"
+    }
+
+    "Item Empty"
+    {
+        "ko"    "비어있습니다!"
+    }
+
+    "Completed"
+    {
+        "ko"    "완료됨"
+    }
 }

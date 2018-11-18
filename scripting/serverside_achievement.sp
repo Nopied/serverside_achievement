@@ -6,6 +6,7 @@
 #include "serverside_achievement/configs.sp"
 
 #include "serverside_achievement/global_vars.sp"
+#include "serverside_achievement/stocks.sp"
 
 public Plugin myinfo=
 {
@@ -32,8 +33,80 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
 	// g_Database = new SADatabase();
+
+	RegConsoleCmd("list", ListCmd);
+
 	LoadTranslations("serverside_achievement");
 }
+
+public Action ListCmd(int client, int args)
+{
+	if(!IsValidClient(client))	return Plugin_Continue;
+	SetGlobalTransTarget(client);
+
+	char authId[25], achievementId[80], text[128], languageId[4];
+	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
+	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
+
+	DBResultSet result = g_Database.GetValues(authId);
+	Menu menu = new Menu(ListMenu_Handler);
+	menu.SetTitle("%t", "My List Menu Title");
+
+	if(result == null)
+	{
+		Format(text, sizeof(text), "%t", "Item Empty");
+		menu.AddItem("empty", text, ITEMDRAW_DISABLED);
+	}
+	else
+	{
+		for(int loop = 0; loop < result.RowCount; loop++)
+		{
+			if(!result.FetchRow()) {
+				if(result.MoreRows) {
+					loop--;
+					continue;
+				}
+				break;
+			}
+
+			g_KeyValue.Rewind();
+			result.FetchString(Data_AchievementId, achievementId, 80);
+			if(!g_KeyValue.JumpToKey(achievementId)) continue;
+
+			g_KeyValue.SetLanguageSet(achievementId, languageId);
+			g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
+
+			if(g_Database.GetValue(authId, achievementId, "completed"))
+				Format(text, sizeof(text), "%s (%t)", text, "Completed");
+			menu.AddItem(achievementId, text);
+		}
+
+		delete result;
+	}
+	menu.ExitButton = true;
+	menu.Display(client, 60);
+
+	return Plugin_Continue;
+}
+
+public int ListMenu_Handler(Menu menu, MenuAction action, int client, int selection)
+{
+	/*
+	if(action == MenuAction_Select)
+	{
+		char achievementId[80];
+	}
+	*/
+}
+
+/*
+void ViewAchievementInfo(int client, char[] achievementId)
+{
+	char authId[25], languageId[4];
+	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
+	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
+}
+*/
 
 public void OnMapStart()
 {
