@@ -100,7 +100,7 @@ stock KeyValues LoadDataConfig()
             achievementKv.GetSectionName(key, sizeof(key));
 
             if(key[0] == '\0')    continue;
-            else if(array.FindString(key) != -1) {
+            else if(array.FindString(key) != -1) { // FIXME?
                 LogError("achievement_id ''%s'' has same name in other!", key);
                 continue;
             }
