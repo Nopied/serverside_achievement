@@ -1,7 +1,7 @@
-#if defined _serverside_achievement_included
+#if defined __serverside_achievement_included
  #endinput
 #endif
-#define _serverside_achievement_included
+#define __serverside_achievement_included
 
 native void SA_AddProcessMeter(int client, const char[] achievementId, int value);
 
@@ -9,7 +9,7 @@ native bool SA_GetComplete(int client, const char[] achievementId, bool &forced)
 
 native bool SA_SetComplete(int client, const char[] achievementId, bool value, bool forced = false);
 
-public SharedPlugin __pl_tutorial_text=
+public SharedPlugin __pl_serverside_achievement=
 {
 	name="serverside_achievement",
 	file="serverside_achievement.smx",

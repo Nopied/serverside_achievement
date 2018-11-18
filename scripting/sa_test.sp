@@ -1,5 +1,8 @@
 #include <sourcemod>
+
+#undef REQUIRE_PLUGIN
 #include <serverside_achievement>
+#define REQUIRE_PLUGIN
 
 public Plugin myinfo=
 {
@@ -12,6 +15,6 @@ public Plugin myinfo=
 public void OnClientPostAdminCheck(int client)
 {
     if(IsFakeClient(client)) return;
-    
+
     SA_AddProcessMeter(client, "beta_tester", 1);
 }
