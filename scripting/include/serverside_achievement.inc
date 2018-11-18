@@ -3,7 +3,11 @@
 #endif
 #define _serverside_achievement_included
 
-native void SA_AddProcessMeter(client)
+native void SA_AddProcessMeter(int client, const char[] achievementId, int value);
+
+native bool SA_GetComplete(int client, const char[] achievementId, bool &forced);
+
+native bool SA_SetComplete(int client, const char[] achievementId, bool value, bool forced = false);
 
 public SharedPlugin __pl_tutorial_text=
 {
@@ -19,6 +23,8 @@ public SharedPlugin __pl_tutorial_text=
 #if !defined REQUIRE_PLUGIN
 public __pl_serverside_achievement_SetNTVOptional()
 {
-    // Mothing.
+    MarkNativeAsOptional("SA_AddProcessMeter");
+    MarkNativeAsOptional("SA_GetComplete");
+    MarkNativeAsOptional("SA_SetComplete");
 }
 #endif

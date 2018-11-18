@@ -22,6 +22,11 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	// serverside_achievement/configs.sp
 	KV_Native_Init();
+
+	// global :3
+	CreateNative("SA_AddProcessMeter", Native_AddProcessMeter);
+	CreateNative("SA_GetComplete", Native_GetComplete);
+	CreateNative("SA_SetComplete", Native_SetComplete);
 }
 
 public void OnPluginStart()
@@ -68,6 +73,16 @@ void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
 	}
 }
 
+public int Native_AddProcessMeter(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1), value = GetNativeCell(3);
+	char achievementName[80], authId[25];
+	GetNativeString(2, achievementName, sizeof(achievementName));
+
+	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
+	AddProcessMeter(client, authId, achievementName, value);
+}
+
 void NoticeCompleteToAll(int client, char[] achievementId)
 {
 	char achievementName[80], languageId[4];
@@ -87,7 +102,17 @@ void NoticeCompleteToAll(int client, char[] achievementId)
 public bool GetComplete(const char[] authId, const char[] achievementId, bool forced)
 {
 	forced = g_Database.GetValue(authId, achievementId, "is_completed_by_force") > 0 ? true : false;
-	return g_Database.GetValue(authId, achievementId, "completed") > 1;
+	return g_Database.GetValue(authId, achievementId, "completed") > 0;
+}
+
+public int Native_GetComplete(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	char achievementName[80], authId[25];
+	GetNativeString(2, achievementName, sizeof(achievementName));
+
+	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
+	return GetComplete(authId, achievementName, GetNativeCellRef(3));
 }
 
 public void SetComplete(const char[] authId, const char[] achievementId, bool value, bool forced)
@@ -102,4 +127,14 @@ public void SetComplete(const char[] authId, const char[] achievementId, bool va
 
 	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
 	g_Database.SetValue(authId, achievementId, "completed_time", temp);
+}
+
+public int Native_SetComplete(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	char achievementName[80], authId[25];
+	GetNativeString(2, achievementName, sizeof(achievementName));
+
+	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
+	SetComplete(authId, achievementName, GetNativeCell(3), GetNativeCell(4));
 }
