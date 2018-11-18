@@ -50,7 +50,7 @@ public void OnClientPostAdminCheck(int client)
 	char authId[25];
 	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 
-	AddProcessMeter(client, authId, "beta_tester", 2);
+	AddProcessMeter(client, authId, "beta_tester", 1);
 }
 
 void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
@@ -60,7 +60,7 @@ void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
 
 	char temp[64];
 	int beforeValue = g_Database.GetValue(authId, achievementId, "process_integer");
-	value += beforeValue;
+	value += value == -1 ? beforeValue+1 : beforeValue;
 	IntToString(value, temp, 64);
 	g_Database.SetValue(authId, achievementId, "process_integer", temp);
 
