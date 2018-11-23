@@ -29,7 +29,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	// int client = GetClientOfUserId(event.GetInt("userid")),
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
-
-	if(!(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER))
-		SA_AddProcessMeter(attacker, "first_kill", 1);
+	if(attacker > 0)
+		if(!(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER))
+			SA_AddProcessMeter(attacker, "first_kill", 1);
 }

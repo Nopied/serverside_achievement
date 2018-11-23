@@ -129,7 +129,7 @@ void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
 
 	char temp[64];
 	int beforeValue = g_Database.GetValue(authId, achievementId, "process_integer");
-	value += value == -1 ? beforeValue+1 : beforeValue;
+	value += beforeValue == -1 ? beforeValue+1 : beforeValue;
 	IntToString(value, temp, 64);
 	g_Database.SetValue(authId, achievementId, "process_integer", temp);
 
