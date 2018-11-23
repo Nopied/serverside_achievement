@@ -76,7 +76,7 @@ public Action ListCmd(int client, int args)
 			g_KeyValue.SetLanguageSet(achievementId, languageId);
 			g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
 
-			if(g_Database.GetValue(authId, achievementId, "completed"))
+			if(g_Database.GetValue(authId, achievementId, "completed") > 0)
 				Format(text, sizeof(text), "%s (%t)", text, "Completed");
 			menu.AddItem(achievementId, text);
 		}
