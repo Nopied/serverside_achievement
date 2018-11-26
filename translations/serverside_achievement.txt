@@ -20,4 +20,22 @@
     {
         "en"    "Completed"
     }
+
+    "Completed Time"
+    {
+        "#format"   "{1:s}"
+        "en"        "Completed Time: {1}"
+    }
+
+    "Current Process"
+    {
+        "#format"   "{1:d},{2:d}"
+        "en"        "Current Process: {1} / {2}"
+    }
+
+    "Added Process Meter"
+    {
+        "#format"   "{1:s},{2:d},{3:d}"
+        "en"        "{1}'s current process: {2} / {3}"
+    }
 }

@@ -24,6 +24,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	// serverside_achievement/configs.sp
 	KV_Native_Init();
 
+	// serverside_achievement/global_vars.sp
+	Data_Native_Init();
+
 	// global :3
 	CreateNative("SA_AddProcessMeter", Native_AddProcessMeter);
 	CreateNative("SA_GetComplete", Native_GetComplete);
@@ -35,6 +38,7 @@ public void OnPluginStart()
 	// g_Database = new SADatabase();
 
 	RegConsoleCmd("list", ListCmd);
+	RegAdminCmd("sadatadump", DumpDataCmd, ADMFLAG_CHEATS);
 
 	LoadTranslations("serverside_achievement");
 }
@@ -48,40 +52,29 @@ public Action ListCmd(int client, int args)
 	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 
-	DBResultSet result = g_Database.GetValues(authId);
 	Menu menu = new Menu(ListMenu_Handler);
 	menu.SetTitle("%t", "My List Menu Title");
 
-	if(result == null)
+	LoadedPlayerData[client].Rewind();
+	if(!LoadedPlayerData[client].GotoFirstSubKey())
 	{
 		Format(text, sizeof(text), "%t", "Item Empty");
 		menu.AddItem("empty", text, ITEMDRAW_DISABLED);
 	}
 	else
 	{
-		for(int loop = 0; loop < result.RowCount; loop++)
+		do
 		{
-			if(!result.FetchRow()) {
-				if(result.MoreRows) {
-					loop--;
-					continue;
-				}
-				break;
-			}
-
-			g_KeyValue.Rewind();
-			result.FetchString(Data_AchievementId, achievementId, 80);
-			if(!g_KeyValue.JumpToKey(achievementId)) continue;
-
+			LoadedPlayerData[client].GetSectionName(achievementId, sizeof(achievementId));
 			g_KeyValue.SetLanguageSet(achievementId, languageId);
 			g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
 
-			if(g_Database.GetValue(authId, achievementId, "completed") > 0)
+			if(LoadedPlayerData[client].GetNum("completed") > 0)
 				Format(text, sizeof(text), "%s (%t)", text, "Completed");
+
 			menu.AddItem(achievementId, text);
 		}
-
-		delete result;
+		while(LoadedPlayerData[client].GotoNextKey());
 	}
 	menu.ExitButton = true;
 	menu.Display(client, 60);
@@ -91,22 +84,69 @@ public Action ListCmd(int client, int args)
 
 public int ListMenu_Handler(Menu menu, MenuAction action, int client, int selection)
 {
-	/*
 	if(action == MenuAction_Select)
 	{
 		char achievementId[80];
+		menu.GetItem(selection, achievementId, sizeof(achievementId));
+
+		ViewAchievementInfo(client, achievementId);
 	}
-	*/
 }
 
-/*
+public Action DumpDataCmd(int client, int args)
+{
+	if(!IsValidClient(client))	return Plugin_Continue;
+
+	char authId[25], dataFile[PLATFORM_MAX_PATH];
+	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
+	BuildPath(Path_SM, dataFile, sizeof(dataFile), "data/sa_dump_%s.txt", authId);
+	// File file = OpenFile(dataFile, "a+");
+
+	LoadedPlayerData[client].Rewind();
+	if(LoadedPlayerData[client].ExportToFile(dataFile))
+		LogMessage("dumped %s's data.\n%s", authId, dataFile);
+
+	// delete file;
+	return Plugin_Continue;
+}
+
 void ViewAchievementInfo(int client, char[] achievementId)
 {
-	char authId[25], languageId[4];
+	char authId[25], languageId[4], text[512], temp[120];
 	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
+
+	g_KeyValue.SetLanguageSet(achievementId, languageId);
+	g_KeyValue.GetValue("", "name", KvData_String, temp, sizeof(temp));
+	g_KeyValue.GetValue("", "description", KvData_String, text, sizeof(text));
+
+	Menu menu = new Menu(InfoMenu_Handler);
+	menu.SetTitle("%s\n - %s", temp, text);
+
+	LoadedPlayerData[client].Rewind();
+	LoadedPlayerData[client].JumpToKey(achievementId);
+
+	if(LoadedPlayerData[client].GetNum("completed", 0) > 0)
+	{
+		// 완료한 시각
+		LoadedPlayerData[client].GetString("completed_time", temp, sizeof(temp), "EMPTY");
+		Format(text, sizeof(text), "%t", "Completed Time", temp);
+		menu.AddItem("", text);
+	}
+	else
+	{
+		// 현재 달성률
+		Format(text, sizeof(text), "%t", "Current Process", LoadedPlayerData[client].GetNum("process_integer", 0), g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int));
+		menu.AddItem("", text);
+	}
+	menu.ExitButton = true;
+	menu.Display(client, 60);
 }
-*/
+
+public int InfoMenu_Handler(Menu menu, MenuAction action, int client, int selection)
+{
+
+}
 
 public void OnMapStart()
 {
@@ -117,39 +157,70 @@ public void OnMapStart()
 	g_KeyValue = new SAKeyValues();
 }
 
-public void OnClientPostAdminCheck(int client)
+public void OnClientAuthorized(int client, const char[] auth)
 {
-	// Nothing.
+	if(IsFakeClient(client))	return;
+
+	LoadedPlayerData[client] = new SAPlayerData(client);
 }
 
-void AddProcessMeter(int client, char[] authId, char[] achievementId, int value)
+public void OnClientDisconnect(int client)
 {
-	if(GetComplete(authId, achievementId, false))
+	if(IsFakeClient(client))	return;
+
+	if(g_Database != null) 		LoadedPlayerData[client].Update();
+	else
+	{	// OFFINE
+		char authId[25], dataFile[PLATFORM_MAX_PATH];
+		GetClientAuthId(client, AuthId_SteamID64, authId, 25);
+		BuildPath(Path_SM, dataFile, sizeof(dataFile), "data/serverside_achievement/sa_%s.txt", authId);
+
+		LoadedPlayerData[client].Rewind();
+		LoadedPlayerData[client].ExportToFile(dataFile);
+	}
+
+	delete LoadedPlayerData[client];
+}
+
+void AddProcessMeter(int client, char[] achievementId, int value)
+{
+	if(GetComplete(client, achievementId, false) || value <= 0)
 		return;
 
-	char temp[64];
-	int beforeValue = g_Database.GetValue(authId, achievementId, "process_integer");
-	value += beforeValue == -1 ? beforeValue+1 : beforeValue;
-	IntToString(value, temp, 64);
-	g_Database.SetValue(authId, achievementId, "process_integer", temp);
+	char languageId[4], name[80];
+	LoadedPlayerData[client].GoToAchievementData(achievementId, true);
+
+	int maxMeter = g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int);
+	int beforeValue = LoadedPlayerData[client].GetNum("process_integer", 0);
+	value += beforeValue;
+	LoadedPlayerData[client].SetNum("process_integer", value);
 
 	// 프로세스 미터가 컨픽의 맥스 프로세스 미터에 충족하면 도전과제 완료.
 	if(g_KeyValue.GetValue(achievementId, "only_set_by_plugin", KvData_Int) <= 0
-	&& value >= g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int))
+	&& value >= maxMeter)
 	{
-		SetComplete(authId, achievementId, true, false);
+		SetComplete(client, achievementId, true, false);
 		NoticeCompleteToAll(client, achievementId);
+	}
+	else if((maxMeter * 0.2) < value && maxMeter % value == 0) // FIXME: %
+	{
+		GetLanguageInfo(GetClientLanguage(client), languageId, 4);
+		SetGlobalTransTarget(client);
+
+		g_KeyValue.SetLanguageSet(achievementId, languageId);
+		g_KeyValue.GetValue("", "name", KvData_String, name, sizeof(name));
+
+		CPrintToChat(client, "{lime}[SA]{default} %t", "Added Process Meter", name, value, maxMeter);
 	}
 }
 
 public int Native_AddProcessMeter(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1), value = GetNativeCell(3);
-	char achievementName[80], authId[25];
+	char achievementName[80];
 	GetNativeString(2, achievementName, sizeof(achievementName));
 
-	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
-	AddProcessMeter(client, authId, achievementName, value);
+	AddProcessMeter(client, achievementName, value);
 }
 
 void NoticeCompleteToAll(int client, char[] achievementId)
@@ -168,42 +239,39 @@ void NoticeCompleteToAll(int client, char[] achievementId)
 	}
 }
 
-public bool GetComplete(const char[] authId, const char[] achievementId, bool forced)
+public bool GetComplete(const int client, const char[] achievementId, bool forced)
 {
-	forced = g_Database.GetValue(authId, achievementId, "is_completed_by_force") > 0 ? true : false;
-	return g_Database.GetValue(authId, achievementId, "completed") > 0;
+	LoadedPlayerData[client].GoToAchievementData(achievementId);
+	forced = LoadedPlayerData[client].GetNum("is_completed_by_force", 0) > 0;
+	return LoadedPlayerData[client].GetNum("completed", 0) > 0;
 }
 
 public int Native_GetComplete(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	char achievementName[80], authId[25];
+	char achievementName[80];
 	GetNativeString(2, achievementName, sizeof(achievementName));
 
-	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
-	return GetComplete(authId, achievementName, GetNativeCellRef(3));
+	return GetComplete(client, achievementName, GetNativeCellRef(3));
 }
 
-public void SetComplete(const char[] authId, const char[] achievementId, bool value, bool forced)
+public void SetComplete(const int client, const char[] achievementId, bool value, bool forced)
 {
+	LoadedPlayerData[client].GoToAchievementData(achievementId, true);
 	char temp[64];
 
-	IntToString(value ? 1 : 0, temp, 2);
-	g_Database.SetValue(authId, achievementId, "completed", temp);
-
-	IntToString(forced ? 1 : 0, temp, 2);
-	g_Database.SetValue(authId, achievementId, "is_completed_by_force", temp);
+	LoadedPlayerData[client].SetNum("completed", value ? 1 : 0);
+	LoadedPlayerData[client].SetNum("is_completed_by_force", forced ? 1 : 0);
 
 	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
-	g_Database.SetValue(authId, achievementId, "completed_time", temp);
+	LoadedPlayerData[client].SetString("completed_time", temp);
 }
 
 public int Native_SetComplete(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	char achievementName[80], authId[25];
+	char achievementName[80];
 	GetNativeString(2, achievementName, sizeof(achievementName));
 
-	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
-	SetComplete(authId, achievementName, GetNativeCell(3), GetNativeCell(4));
+	SetComplete(client, achievementName, GetNativeCell(3), GetNativeCell(4));
 }

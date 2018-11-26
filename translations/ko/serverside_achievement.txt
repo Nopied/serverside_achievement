@@ -20,4 +20,22 @@
     {
         "ko"    "완료됨"
     }
+
+    "Completed Time"
+    {
+        "#format"   "{1:s}"
+        "ko"        "완료한 시각: {1}"
+    }
+
+    "Current Process"
+    {
+        "#format"   "{1:d},{2:d}"
+        "ko"        "현재 진행 상황: {1} / {2}"
+    }
+
+    "Added Process Meter"
+    {
+        "#format"   "{1:s},{2:d},{3:d}"
+        "ko"        "{1}의 현재 진행: {2} / {3}"
+    }
 }

@@ -20,16 +20,32 @@ public void OnPluginStart()
 
 public void OnClientPostAdminCheck(int client)
 {
-    if(IsFakeClient(client)) return;
+	if(IsFakeClient(client)) return;
 
-    SA_AddProcessMeter(client, "beta_tester", 1);
+	SA_AddProcessMeter(client, "beta_tester", 1);
+
+	CreateTimer(1.0, TestTimer, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action TestTimer(Handle timer, any client)
+{
+	if(!IsClientInGame(client))		return Plugin_Stop;
+
+	SA_AddProcessMeter(client, "no_life", 1);
+	return Plugin_Continue;
 }
 
 public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	// int client = GetClientOfUserId(event.GetInt("userid")),
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
-	if(attacker > 0)
+
+	if(attacker > 0 && client != attacker
+		&& !IsFakeClient(attacker))
 		if(!(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER))
+		{
 			SA_AddProcessMeter(attacker, "first_kill", 1);
+			SA_AddProcessMeter(attacker, "kill_spree", 1);
+			SA_AddProcessMeter(attacker, "kill_spree_2", 1);
+		}
 }

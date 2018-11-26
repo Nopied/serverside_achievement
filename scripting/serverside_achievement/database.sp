@@ -11,7 +11,8 @@ methodmap SADatabase < Database {
         database = SQL_Connect(SADATABASE_CONFIG_NAME, true, errorMessage, sizeof(errorMessage));
         if(database == null)
         {
-            SetFailState("Can't connect to DB! Error: %s", errorMessage);
+            LogError("Can't connect to DB! This will be Offine mode! Error: %s", errorMessage);
+            return view_as<SADatabase>(database);
         }
 
         driver = database.Driver;
@@ -19,7 +20,7 @@ methodmap SADatabase < Database {
 
         if(!StrEqual("mysql", driverString))
         {
-            SetFailState("This plugin is only allowed to use mysql!");
+            LogError("Can't connect to DB! Error: %s", errorMessage);
         }
 
         database.SetCharset("utf8");
@@ -29,7 +30,7 @@ methodmap SADatabase < Database {
     public native int GetValue(const char[] authid, const char[] achievementId, const char[] key, char[] value = "", int buffer = 0);
     public native void SetValue(const char[] authid, const char[] achievementId, const char[] key, const char[] value);
 
-    public native DBResultSet GetValues(const char[] authid);
+    public native void GetValues(const int client, SQLQueryCallback queryCallback);
 
     public native int GetSavedTime(const char[] authid);
 }
@@ -115,12 +116,12 @@ public int Native_SADatabase_GetValues(Handle plugin, int numParams)
 {
     SADatabase thisDB = GetNativeCell(1);
 
-    char authId[24], queryStr[256];
-    GetNativeString(2, authId, 24);
+    char authId[25], queryStr[256];
+    int client = GetNativeCell(2);
+    GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 
     Format(queryStr, sizeof(queryStr), "SELECT * FROM `serverside_achievement` WHERE `steam_id` = '%s'", authId);
-    DBResultSet query = SQL_Query(thisDB, queryStr);
-    return view_as<int>(query);
+    thisDB.Query(GetNativeCell(3), queryStr, client);
 }
 
 public int Native_SADatabase_GetSavedTime(Handle plugin, int numParams)
