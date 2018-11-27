@@ -7,7 +7,7 @@ native void SA_AddProcessMeter(int client, const char[] achievementId, int value
 
 native bool SA_GetComplete(int client, const char[] achievementId, bool &forced);
 
-native bool SA_SetComplete(int client, const char[] achievementId, bool value, bool forced = false);
+native void SA_SetComplete(int client, const char[] achievementId, bool value, bool forced = false);
 
 public SharedPlugin __pl_serverside_achievement=
 {
