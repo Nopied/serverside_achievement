@@ -37,8 +37,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
-	// g_Database = new SADatabase();
-
 	RegConsoleCmd("list", ListCmd);
 	RegAdminCmd("sadatadump", DumpDataCmd, ADMFLAG_CHEATS);
 
