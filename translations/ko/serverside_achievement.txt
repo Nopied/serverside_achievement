@@ -8,7 +8,8 @@
 
     "My List Menu Title"
     {
-        "ko"    "내 도전과제 리스트"
+        "#format"   "{1:d},{2:d}"
+        "ko"    "내 도전과제 리스트\n - 흭득한 점수: {1} / {2}"
     }
 
     "Item Empty"
@@ -36,6 +37,7 @@
     "Added Process Meter"
     {
         "#format"   "{1:s},{2:d},{3:d}"
-        "ko"        "{1}의 현재 진행: {2} / {3}"
+        "ko"        "{immortal}{1}{default}의 현재 진행: {2} / {3}"
+    }
     }
 }

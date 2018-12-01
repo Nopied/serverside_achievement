@@ -7,8 +7,9 @@ public Action ListCmd(int client, int args)
 	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 
+	int myScore, maxScore;
+	bool completed;
 	Menu menu = new Menu(ListMenu_Handler);
-	menu.SetTitle("%t", "My List Menu Title");
 
 	LoadedPlayerData[client].Rewind();
 	if(!LoadedPlayerData[client].GotoFirstSubKey())
@@ -21,16 +22,28 @@ public Action ListCmd(int client, int args)
 		do
 		{
 			LoadedPlayerData[client].GetSectionName(achievementId, sizeof(achievementId));
+			maxScore += g_KeyValue.GetValue(achievementId, "score", KvData_Int);
+			completed = LoadedPlayerData[client].GetNum("completed") > 0;
+
+			if(g_KeyValue.GetValue(achievementId, "menu_display_disable", KvData_Int) > 0
+			|| (!completed && g_KeyValue.GetValue(achievementId, "hidden", KvData_Int) > 0))
+				continue;
+
 			g_KeyValue.SetLanguageSet(achievementId, languageId);
 			g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
 
-			if(LoadedPlayerData[client].GetNum("completed") > 0)
+			if(completed)
+			{
 				Format(text, sizeof(text), "%s (%t)", text, "Completed");
+				myScore += g_KeyValue.GetValue(achievementId, "score", KvData_Int);
+			}
 
 			menu.AddItem(achievementId, text);
 		}
 		while(LoadedPlayerData[client].GotoNextKey());
 	}
+
+	menu.SetTitle("%t", "My List Menu Title", myScore, maxScore);
 	menu.ExitButton = true;
 	menu.Display(client, 60);
 
@@ -67,13 +80,21 @@ public Action DumpDataCmd(int client, int args)
 
 void ViewAchievementInfo(int client, char[] achievementId)
 {
+	SetGlobalTransTarget(client);
+
 	char authId[25], languageId[4], text[512], temp[120];
 	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 
+	bool hiddenDescription = g_KeyValue.GetValue(achievementId, "hidden_description", KvData_Int);
+
 	g_KeyValue.SetLanguageSet(achievementId, languageId);
 	g_KeyValue.GetValue("", "name", KvData_String, temp, sizeof(temp));
-	g_KeyValue.GetValue("", "description", KvData_String, text, sizeof(text));
+
+	if(!hiddenDescription)
+		g_KeyValue.GetValue("", "description", KvData_String, text, sizeof(text));
+	else
+		Format(text, sizeof(text), "%t", "Hidden Text");
 
 	Menu menu = new Menu(InfoMenu_Handler);
 	menu.SetTitle("%s\n - %s", temp, text);

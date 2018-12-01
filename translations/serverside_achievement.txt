@@ -8,7 +8,8 @@
 
     "My List Menu Title"
     {
-        "en"    "My Achievement List"
+        "#format"   "{1:d},{2:d}"
+        "en"    "My Achievement List\n - Score: {1} / {2}"
     }
 
     "Item Empty"
@@ -36,6 +37,7 @@
     "Added Process Meter"
     {
         "#format"   "{1:s},{2:d},{3:d}"
-        "en"        "{1}'s current process: {2} / {3}"
+        "en"        "{immortal}{1}{default}'s current process: {2} / {3}"
+    }
     }
 }
