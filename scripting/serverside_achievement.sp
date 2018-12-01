@@ -2,11 +2,12 @@
 #include <morecolors>
 #include <serverside_achievement>
 
+#include "serverside_achievement/stocks.sp"
+
 #include "serverside_achievement/database.sp"
 #include "serverside_achievement/configs.sp"
 
 #include "serverside_achievement/global_vars.sp"
-#include "serverside_achievement/stocks.sp"
 
 #include "serverside_achievement/menu.sp"
 
