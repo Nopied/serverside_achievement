@@ -39,5 +39,9 @@
         "#format"   "{1:s},{2:d},{3:d}"
         "ko"        "{immortal}{1}{default}의 현재 진행: {2} / {3}"
     }
+
+    "Hidden Text"
+    {
+        "ko"    "이 도전과제 조건은 숨겨졌습니다!"
     }
 }

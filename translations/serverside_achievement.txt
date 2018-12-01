@@ -39,5 +39,9 @@
         "#format"   "{1:s},{2:d},{3:d}"
         "en"        "{immortal}{1}{default}'s current process: {2} / {3}"
     }
+
+    "Hidden Text"
+    {
+        "en"    "THIS IS HIDDEN ACHIEVEMENT."
     }
 }
