@@ -31,6 +31,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	Data_Native_Init();
 
 	// global :3
+	CreateNative("SA_CreateTemporaryAchievement", Native_CreateTemporaryAchievement);
 	CreateNative("SA_AddProcessMeter", Native_AddProcessMeter);
 	CreateNative("SA_GetComplete", Native_GetComplete);
 	CreateNative("SA_SetComplete", Native_SetComplete);
@@ -170,4 +171,20 @@ public int Native_SetComplete(Handle plugin, int numParams)
 	GetNativeString(2, achievementName, sizeof(achievementName));
 
 	SetComplete(client, achievementName, GetNativeCell(3), GetNativeCell(4));
+void CreateTemporaryAchievement(char[] achievementId, int maxProcessInteger)
+{
+	g_KeyValue.Rewind();
+	g_KeyValue.JumpToKey(achievementId, true);
+
+	g_KeyValue.SetNum("process_max_meter", maxProcessInteger);
+	g_KeyValue.SetNum("notice_disable", 1);
+	g_KeyValue.SetNum("menu_display_disable", 1);
+}
+
+public int Native_CreateTemporaryAchievement(Handle plugin, int numParams)
+{
+	char achievementId[80];
+	GetNativeString(1, achievementId, sizeof(achievementId));
+
+	CreateTemporaryAchievement(achievementId, GetNativeCell(2));
 }
