@@ -19,6 +19,7 @@ public Plugin myinfo=
 	version="20181110",
 };
 
+Handle OnLoadedAchievements;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	// serverside_achievement/database.sp
@@ -35,6 +36,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("SA_AddProcessMeter", Native_AddProcessMeter);
 	CreateNative("SA_GetComplete", Native_GetComplete);
 	CreateNative("SA_SetComplete", Native_SetComplete);
+
+	OnLoadedAchievements = CreateGlobalForward("SA_OnLoadedAchievements", ET_Ignore);
 }
 
 public void OnPluginStart()
@@ -52,6 +55,9 @@ public void OnMapStart()
 	if(g_KeyValue != null)
 		delete g_KeyValue;
 	g_KeyValue = new SAKeyValues();
+
+	Call_StartForward(OnLoadedAchievements);
+	Call_Finish();
 }
 
 public void OnClientAuthorized(int client, const char[] auth)
