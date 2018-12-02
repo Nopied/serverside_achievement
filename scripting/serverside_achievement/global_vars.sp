@@ -3,16 +3,18 @@ SAKeyValues g_KeyValue;
 
 methodmap SAPlayerData < KeyValues {
 	public SAPlayerData(int client) {
-		char authId[25], achievementId[80], queryStr[256], dataFile[PLATFORM_MAX_PATH];
+		char authId[25], achievementId[80], queryStr[256], dataFile[PLATFORM_MAX_PATH], timeStr[64], temp[64];
 		GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 		BuildPath(Path_SM, dataFile, sizeof(dataFile), "data/serverside_achievement/sa_%s.txt", authId);
+		FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S");
 		SAPlayerData playerData = view_as<SAPlayerData>(new KeyValues("player_data", "authid", authId));
 
 		// 컨픽에 있는 부분만 쿼리 요청 후 콜백에서 빈 key들을 추가
 
 		g_KeyValue.Rewind();
-		if(g_KeyValue.GotoFirstSubKey()) {
+		DateTimeCheck checkType = view_as<DateTimeCheck>(g_KeyValue.GetNum("day_check", -1));
 
+		if(g_KeyValue.GotoFirstSubKey()) {
 			if(g_Database == null)
 				if(FileExists(dataFile))
 					playerData.ImportFromFile(dataFile);
@@ -22,6 +24,16 @@ methodmap SAPlayerData < KeyValues {
 				g_KeyValue.GetSectionName(achievementId, sizeof(achievementId));
 
 				playerData.JumpToKey(achievementId, true);
+
+				if(g_Database == null)
+				{
+					playerData.GetString("last_saved_time", timeStr, sizeof(timeStr), "");
+					if(checkType != Check_None && GetDayChange(checkType, temp, timeStr))
+					{
+						playerData.SetNum("completed", 0);
+						playerData.SetNum("process_integer", 0);
+					}
+				}
 			}
 			while(g_KeyValue.GotoNextKey());
 
@@ -29,7 +41,6 @@ methodmap SAPlayerData < KeyValues {
 				Format(queryStr, sizeof(queryStr), "SELECT * FROM `serverside_achievement` WHERE `steam_id` = '%s'", authId);
 				g_Database.Query(ReadResult, queryStr, client);
 			}
-
 		}
 
 		return playerData;
@@ -74,7 +85,9 @@ void Data_Native_Init()
 
 public void ReadResult(Database db, DBResultSet results, const char[] error, int client)
 {
-	char temp[120];
+	char temp[120], timeStr[64];
+	DateTimeCheck checkType;
+	FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S");
 
 	for(int loop = 0; loop < results.RowCount; loop++)
 	{
@@ -86,12 +99,13 @@ public void ReadResult(Database db, DBResultSet results, const char[] error, int
 			break;
 		}
 
+		g_KeyValue.Rewind();
 		LoadedPlayerData[client].Rewind();
 
 		results.FetchString(Data_AchievementId, temp, 120);
 
 		// 서버에 등록된 도전과제만 로드
-		if(!LoadedPlayerData[client].JumpToKey(temp)) continue;
+		if(!LoadedPlayerData[client].JumpToKey(temp) || !g_KeyValue.JumpToKey(temp)) continue;
 
 		// Initializing PlayerData
 		results.FetchString(Data_CompletedTime, temp, 120);
@@ -100,12 +114,19 @@ public void ReadResult(Database db, DBResultSet results, const char[] error, int
 		results.FetchString(Data_LastSavedTime, temp, 120);
 		LoadedPlayerData[client].SetString("last_saved_time", temp);
 
-		LoadedPlayerData[client].SetNum("completed", results.FetchInt(Data_Completed));
+		checkType = view_as<DateTimeCheck>(g_KeyValue.GetNum("day_check", -1));
+		if(checkType != Check_None && GetDayChange(checkType, temp, timeStr))
+		{
+			LoadedPlayerData[client].SetNum("completed", 0);
+			LoadedPlayerData[client].SetNum("process_integer", 0);
+		}
+		else
+		{
+			LoadedPlayerData[client].SetNum("completed", results.FetchInt(Data_Completed));
+			LoadedPlayerData[client].SetNum("process_integer", results.FetchInt(Data_ProcessInteger));
+		}
 		LoadedPlayerData[client].SetNum("is_completed_by_force", results.FetchInt(Data_IsCompletedByForce));
-		LoadedPlayerData[client].SetNum("process_integer", results.FetchInt(Data_ProcessInteger));
 	}
-
-	// LogMessage("%N's data readed.", client);
 }
 
 public int Native_SAPlayerData_GoToAchievementData(Handle plugin, int numParams)
