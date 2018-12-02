@@ -90,14 +90,15 @@ public void OnClientDisconnect(int client)
 
 void AddProcessMeter(int client, char[] achievementId, int value)
 {
-	if(GetComplete(client, achievementId, false) || value <= 0)
+	char languageId[4], name[80];
+	int maxMeter = g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int);
+
+	if(maxMeter == -1 || GetComplete(client, achievementId, false) || value <= 0)
 		return;
 
-	char languageId[4], name[80];
 	bool noticeDisable = g_KeyValue.GetValue(achievementId, "notice_disable", KvData_Int) > 0;
 	LoadedPlayerData[client].GoToAchievementData(achievementId, true);
 
-	int maxMeter = g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int);
 	int beforeValue = LoadedPlayerData[client].GetNum("process_integer", 0);
 	value += beforeValue;
 	LoadedPlayerData[client].SetNum("process_integer", value);
