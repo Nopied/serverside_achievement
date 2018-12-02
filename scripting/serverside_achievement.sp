@@ -20,6 +20,8 @@ public Plugin myinfo=
 };
 
 Handle OnLoadedAchievements;
+Handle OnCompleted;
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	// serverside_achievement/database.sp
@@ -38,6 +40,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("SA_SetComplete", Native_SetComplete);
 
 	OnLoadedAchievements = CreateGlobalForward("SA_OnLoadedAchievements", ET_Ignore);
+	OnCompleted = CreateGlobalForward("SA_OnCompleted", ET_Hook, Param_Cell, Param_String);
 }
 
 public void OnPluginStart()
@@ -91,6 +94,7 @@ void AddProcessMeter(int client, char[] achievementId, int value)
 		return;
 
 	char languageId[4], name[80];
+	bool noticeDisable = g_KeyValue.GetValue(achievementId, "notice_disable", KvData_Int) > 0;
 	LoadedPlayerData[client].GoToAchievementData(achievementId, true);
 
 	int maxMeter = g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int);
@@ -103,9 +107,17 @@ void AddProcessMeter(int client, char[] achievementId, int value)
 	&& value >= maxMeter)
 	{
 		SetComplete(client, achievementId, true, false);
-		NoticeCompleteToAll(client, achievementId);
+
+		Call_StartForward(OnCompleted);
+		Call_PushCell(client);
+		Call_PushStringEx(achievementId, 80, SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		Call_Finish();
+
+		if(!noticeDisable)
+			NoticeCompleteToAll(client, achievementId);
 	}
-	else if((maxMeter * 0.2) < value && maxMeter % value == 0) // FIXME: %
+	else if((maxMeter * 0.2) < value && maxMeter % value == 0
+	&& !noticeDisable) // FIXME: %
 	{
 		GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 		SetGlobalTransTarget(client);
@@ -173,10 +185,25 @@ public void SetComplete(const int client, const char[] achievementId, bool value
 public int Native_SetComplete(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
+	bool value = GetNativeCell(3), forced = GetNativeCell(4);
 	char achievementName[80];
 	GetNativeString(2, achievementName, sizeof(achievementName));
+	bool noticeDisable = g_KeyValue.GetValue(achievementId, "notice_disable", KvData_Int) > 0;
 
-	SetComplete(client, achievementName, GetNativeCell(3), GetNativeCell(4));
+	if(!GetComplete(client, achievementName, false) && value)
+	{
+		Call_StartForward(OnCompleted);
+		Call_PushCell(client);
+		Call_PushStringEx(achievementName, 80, SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		Call_Finish();
+
+		if(!forced && noticeDisable)
+			NoticeCompleteToAll(client, achievementName);
+	}
+
+	SetComplete(client, achievementName, value, forced);
+}
+
 void CreateTemporaryAchievement(char[] achievementId, int maxProcessInteger)
 {
 	g_KeyValue.Rewind();

@@ -15,6 +15,10 @@ native bool SA_GetComplete(int client, const char[] achievementId, bool &forced)
 native void SA_SetComplete(int client, const char[] achievementId, bool value, bool forced = false);
 
 forward void SA_OnLoadedAchievements();
+
+// SA_AddProcessMeter, SA_SetComplete(@forced is false.)
+forward void SA_OnCompleted(int client, const char[] achievementId);
+
 public SharedPlugin __pl_serverside_achievement=
 {
 	name="serverside_achievement",
