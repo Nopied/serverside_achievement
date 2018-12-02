@@ -86,12 +86,16 @@ void ViewAchievementInfo(int client, char[] achievementId)
 	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 
+	LoadedPlayerData[client].Rewind();
+	LoadedPlayerData[client].JumpToKey(achievementId);
+
+	bool completed = LoadedPlayerData[client].GetNum("completed", 0) > 0;
 	bool hiddenDescription = g_KeyValue.GetValue(achievementId, "hidden_description", KvData_Int);
 
 	g_KeyValue.SetLanguageSet(achievementId, languageId);
 	g_KeyValue.GetValue("", "name", KvData_String, temp, sizeof(temp));
 
-	if(!hiddenDescription)
+	if(!hiddenDescription || completed)
 		g_KeyValue.GetValue("", "description", KvData_String, text, sizeof(text));
 	else
 		Format(text, sizeof(text), "%t", "Hidden Text");
@@ -99,10 +103,7 @@ void ViewAchievementInfo(int client, char[] achievementId)
 	Menu menu = new Menu(InfoMenu_Handler);
 	menu.SetTitle("%s\n - %s", temp, text);
 
-	LoadedPlayerData[client].Rewind();
-	LoadedPlayerData[client].JumpToKey(achievementId);
-
-	if(LoadedPlayerData[client].GetNum("completed", 0) > 0)
+	if(completed)
 	{
 		// 완료한 시각
 		LoadedPlayerData[client].GetString("completed_time", temp, sizeof(temp), "EMPTY");
