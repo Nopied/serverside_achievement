@@ -8,6 +8,9 @@
     This achievement's KeyValues will add keys "notice_disable" = 1, "menu_display_disable" = 1
 */
 native void SA_CreateTemporaryAchievement(const char[] achievementId, int maxProcessInteger);
+
+native int SA_GetProcessMeter(int client, const char[] achievementId);
+
 native void SA_AddProcessMeter(int client, const char[] achievementId, int value);
 
 native bool SA_GetComplete(int client, const char[] achievementId, bool &forced);
@@ -34,6 +37,7 @@ public SharedPlugin __pl_serverside_achievement=
 public __pl_serverside_achievement_SetNTVOptional()
 {
     MarkNativeAsOptional("SA_CreateTemporaryAchievement");
+    MarkNativeAsOptional("SA_GetProcessMeter");
     MarkNativeAsOptional("SA_AddProcessMeter");
     MarkNativeAsOptional("SA_GetComplete");
     MarkNativeAsOptional("SA_SetComplete");

@@ -35,6 +35,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	// global :3
 	CreateNative("SA_CreateTemporaryAchievement", Native_CreateTemporaryAchievement);
+	CreateNative("SA_GetProcessMeter", Native_GetProcessMeter);
 	CreateNative("SA_AddProcessMeter", Native_AddProcessMeter);
 	CreateNative("SA_GetComplete", Native_GetComplete);
 	CreateNative("SA_SetComplete", Native_SetComplete);
@@ -128,6 +129,21 @@ void AddProcessMeter(int client, char[] achievementId, int value)
 
 		CPrintToChat(client, "{lime}[SA]{default} %t", "Added Process Meter", name, value, maxMeter);
 	}
+}
+
+int GetProcessMeter(int client, char[] achievementId)
+{
+	LoadedPlayerData[client].GoToAchievementData(achievementId);
+	return LoadedPlayerData[client].GetNum("process_integer", 0);
+}
+
+public int Native_GetProcessMeter(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	char achievementId[80];
+	GetNativeString(2, achievementId, sizeof(achievementId));
+
+	return GetProcessMeter(client, achievementId);
 }
 
 public int Native_AddProcessMeter(Handle plugin, int numParams)
