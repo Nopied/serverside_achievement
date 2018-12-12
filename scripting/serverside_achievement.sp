@@ -81,10 +81,14 @@ public void OnClientDisconnect(int client)
 
 void AddProcessMeter(int client, char[] achievementId, int value)
 {
-	char languageId[4], name[80];
+	char languageId[4], name[80], eventTime[64], currentTime[64];
 	int maxMeter = g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int);
 
-	if(maxMeter == -1 || GetComplete(client, achievementId, false) || value <= 0)
+	g_KeyValue.GetValue(achievementId, "event_end_datetime", KvData_String, eventTime, sizeof(eventTime));
+	FormatTime(currentTime, sizeof(currentTime), "%Y-%m-%d %H:%M:%S");
+
+	if(maxMeter == -1 || GetComplete(client, achievementId, false) || value <= 0
+	|| (eventTime[0] != '\0' && !GetDayChange(Check_Second, eventTime, currentTime)))
 		return;
 
 	bool noticeDisable = g_KeyValue.GetValue(achievementId, "notice_disable", KvData_Int) > 0;
