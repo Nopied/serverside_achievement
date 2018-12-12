@@ -75,17 +75,7 @@ public void OnClientDisconnect(int client)
 {
 	if(IsFakeClient(client))	return;
 
-	if(g_Database != null) 		LoadedPlayerData[client].Update();
-	else
-	{	// OFFINE
-		char authId[25], dataFile[PLATFORM_MAX_PATH];
-		GetClientAuthId(client, AuthId_SteamID64, authId, 25);
-		BuildPath(Path_SM, dataFile, sizeof(dataFile), "data/serverside_achievement/sa_%s.txt", authId);
-
-		LoadedPlayerData[client].Rewind();
-		LoadedPlayerData[client].ExportToFile(dataFile);
-	}
-
+	LoadedPlayerData[client].Update();
 	delete LoadedPlayerData[client];
 }
 

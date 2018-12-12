@@ -138,13 +138,13 @@ public int Native_SAPlayerData_GoToAchievementData(Handle plugin, int numParams)
 
 	playerData.Rewind();
 	GetNativeString(2, achievementId, sizeof(achievementId));
-	playerData.JumpToKey(achievementId, true);
 
-	if(needUpdate)
+	if(playerData.JumpToKey(achievementId, needUpdate) && needUpdate)
 	{
 		FormatTime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S");
-		playerData.SetNum("need_update", 1);
 		playerData.SetString("last_saved_time", timeStr);
+
+		playerData.SetNum("need_update", 1);
 	}
 	return;
 }
@@ -152,39 +152,49 @@ public int Native_SAPlayerData_GoToAchievementData(Handle plugin, int numParams)
 public int Native_SAPlayerData_Update(Handle plugin, int numParams)
 {
 	SAPlayerData playerData = GetNativeCell(1);
-	char achievementId[80], queryStr[512], authId[25], temp[120];
+	char achievementId[80], queryStr[512], authId[25], temp[120], dataFile[PLATFORM_MAX_PATH];
 	Transaction transaction = new Transaction();
 
 	playerData.Rewind();
-	playerData.GetString("authid", authId, sizeof(authId));
-	if(playerData.GotoFirstSubKey())
+	if(g_Database != null)
 	{
-		do
+		playerData.GetString("authid", authId, sizeof(authId));
+		if(playerData.GotoFirstSubKey())
 		{
-			playerData.GetSectionName(achievementId, sizeof(achievementId));
-
-			if(playerData.GetNum("need_update", 0) > 0)
+			do
 			{
-				for(int loop = Data_CompletedTime; loop < DataCount_Max; loop++)
+				playerData.GetSectionName(achievementId, sizeof(achievementId));
+
+				if(playerData.GetNum("need_update", 0) > 0)
 				{
-					playerData.GetString(g_QueryColumn[loop], temp, sizeof(temp), "");
+					for(int loop = Data_CompletedTime; loop < DataCount_Max; loop++)
+					{
+						playerData.GetString(g_QueryColumn[loop], temp, sizeof(temp), "");
 
-					if(temp[0] == '\0') continue;
+						if(temp[0] == '\0') continue;
 
-					Format(queryStr, sizeof(queryStr),
-					"INSERT INTO `serverside_achievement` (`steam_id`, `achievement_id`, `%s`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE `steam_id` = '%s',  `achievement_id` = '%s', `%s` = '%s'",
-					g_QueryColumn[loop], authId, achievementId, temp,
-					authId, achievementId, g_QueryColumn[loop], temp);
+						Format(queryStr, sizeof(queryStr),
+						"INSERT INTO `serverside_achievement` (`steam_id`, `achievement_id`, `%s`) VALUES ('%s', '%s', '%s') ON DUPLICATE KEY UPDATE `steam_id` = '%s',  `achievement_id` = '%s', `%s` = '%s'",
+						g_QueryColumn[loop], authId, achievementId, temp,
+						authId, achievementId, g_QueryColumn[loop], temp);
 
-					transaction.AddQuery(queryStr);
+						transaction.AddQuery(queryStr);
+					}
+					playerData.DeleteKey("need_update");
 				}
-				playerData.DeleteKey("need_update");
 			}
+			while(playerData.GotoNextKey());
 		}
-		while(playerData.GotoNextKey());
-	}
 
-	g_Database.Execute(transaction, _, OnTransactionError);
+		g_Database.Execute(transaction, _, OnTransactionError);
+	}
+	else
+	{
+		BuildPath(Path_SM, dataFile, sizeof(dataFile), "data/serverside_achievement/sa_%s.txt", authId);
+
+		LoadedPlayerData[client].Rewind();
+		LoadedPlayerData[client].ExportToFile(dataFile);
+	}
 }
 
 public void OnTransactionError(Database db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)
