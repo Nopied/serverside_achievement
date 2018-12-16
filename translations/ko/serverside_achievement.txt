@@ -6,10 +6,48 @@
         "ko"        "{1}님이 도전과제 ''{immortal}{2}{default}''를 달성하였습니다!"
     }
 
+    "List Menu Title"
+    {
+        "ko"    "도전과제 목록"
+    }
+
+    "Event Menu Title"
+    {
+        "ko"    "이벤트"
+    }
+
+    "Event End Time"
+    {
+        "#format"   "{1:s}"
+        "ko"    "이벤트 종료 시간: {1}"
+    }
+
+    "View Event"
+    {
+        "#format"   "{1:s}"
+        "ko"    "이벤트 표시: {1}"
+    }
+
+    "View Expired"
+    {
+        "#format"   "{1:s}"
+        "ko"    "만료된 이벤트 표시: {1}"
+    }
+
+    "Expired"
+    {
+        "ko"    "만료됨"
+    }
+
     "My List Menu Title"
     {
+        "ko"    "내 도전과제 목록"
+    }
+
+    "My List Menu Score"
+    {
         "#format"   "{1:d},{2:d}"
-        "ko"    "내 도전과제 리스트\n - 흭득한 점수: {1} / {2}"
+        "ko"    "흭득한 점수: {1} / {2}"
     }
 
     "Item Empty"

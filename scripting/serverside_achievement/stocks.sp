@@ -31,7 +31,7 @@ stock bool GetDayChange(DateTimeCheck type, const char[] dateTime, const char[] 
     ExplodeString(targetDateTimeCopy[0], "-", targetDateTimeFirst, sizeof(targetDateTimeFirst), sizeof(targetDateTimeFirst[]));
     ExplodeString(targetDateTimeCopy[1], ":", targetDateTimeLast, sizeof(targetDateTimeLast), sizeof(targetDateTimeLast[]));
 
-    for(int loop = view_as<int>(Check_Year); loop <= view_as<int>(type); loop--)
+    for(int loop = view_as<int>(Check_Year); loop <= view_as<int>(type); loop++)
     {
         // 2018-05-29 17:05:38 -> 2018-06-28 15:08:40
         if(loop > 2) {

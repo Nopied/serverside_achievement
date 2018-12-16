@@ -27,12 +27,14 @@ methodmap SADatabase < Database {
 
         return view_as<SADatabase>(database);
     }
+    /*
     public native int GetValue(const char[] authid, const char[] achievementId, const char[] key, char[] value = "", int buffer = 0);
     public native void SetValue(const char[] authid, const char[] achievementId, const char[] key, const char[] value);
 
     public native void GetValues(const int client, SQLQueryCallback queryCallback);
 
     public native int GetSavedTime(const char[] authid);
+    */
 }
 
 public void QueryErrorCheck(Database db, DBResultSet results, const char[] error, any data)
@@ -45,12 +47,15 @@ public void QueryErrorCheck(Database db, DBResultSet results, const char[] error
 
 void DB_Native_Init()
 {
+    /*
     CreateNative("SADatabase.GetValue", Native_SADatabase_GetValue);
     CreateNative("SADatabase.SetValue", Native_SADatabase_SetValue);
     CreateNative("SADatabase.GetValues", Native_SADatabase_GetValues);
     CreateNative("SADatabase.GetSavedTime", Native_SADatabase_GetSavedTime);
+    */
 }
 
+/*
 public int Native_SADatabase_GetValue(Handle plugin, int numParams)
 {
     SADatabase thisDB = GetNativeCell(1);
@@ -147,3 +152,4 @@ public int Native_SADatabase_GetSavedTime(Handle plugin, int numParams)
     delete query;
     return result;
 }
+*/

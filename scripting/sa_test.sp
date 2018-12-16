@@ -23,6 +23,7 @@ public void OnClientPostAdminCheck(int client)
 	if(IsFakeClient(client)) return;
 
 	SA_AddProcessMeter(client, "beta_tester", 1);
+	SA_AddProcessMeter(client, "event_test", 1);
 
 	CreateTimer(1.0, TestTimer, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }

@@ -192,8 +192,8 @@ public int Native_SAPlayerData_Update(Handle plugin, int numParams)
 	{
 		BuildPath(Path_SM, dataFile, sizeof(dataFile), "data/serverside_achievement/sa_%s.txt", authId);
 
-		LoadedPlayerData[client].Rewind();
-		LoadedPlayerData[client].ExportToFile(dataFile);
+		playerData.Rewind();
+		playerData.ExportToFile(dataFile);
 	}
 }
 

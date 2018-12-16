@@ -6,10 +6,48 @@
         "en"        "{1} just earned their Achievement ''{immortal}{2}{default}''!"
     }
 
+    "List Menu Title"
+    {
+        "en"    "Achievement List"
+    }
+
+    "Event Menu Title"
+    {
+        "en"    "Event"
+    }
+
+    "Event End Time"
+    {
+        "#format"   "{1:s}"
+        "en"    "Event End Time: {1}"
+    }
+
+    "View Event"
+    {
+        "#format"   "{1:s}"
+        "en"    "View Event: {1}"
+    }
+
+    "View Expired"
+    {
+        "#format"   "{1:s}"
+        "en"    "View Expired: {1}"
+    }
+
+    "Expired"
+    {
+        "en"    "Expired"
+    }
+
     "My List Menu Title"
     {
+        "en"    "My Achievement List"
+    }
+
+    "My List Menu Score"
+    {
         "#format"   "{1:d},{2:d}"
-        "en"    "My Achievement List\n - Score: {1} / {2}"
+        "en"    "Score: {1} / {2}"
     }
 
     "Item Empty"

@@ -16,7 +16,7 @@ public Plugin myinfo=
 	name="SERVERSIDE ACHIEVEMENT",
 	author="Nopied",
 	description="",
-	version="20181110",
+	version="20181216",
 };
 
 Handle OnLoadedAchievements;
@@ -47,6 +47,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
 	RegConsoleCmd("list", ListCmd);
+	RegConsoleCmd("mylist", MyListCmd);
 	RegAdminCmd("sadatadump", DumpDataCmd, ADMFLAG_CHEATS);
 
 	LoadTranslations("serverside_achievement");
@@ -88,7 +89,7 @@ void AddProcessMeter(int client, char[] achievementId, int value)
 	FormatTime(currentTime, sizeof(currentTime), "%Y-%m-%d %H:%M:%S");
 
 	if(maxMeter == -1 || GetComplete(client, achievementId, false) || value <= 0
-	|| (eventTime[0] != '\0' && !GetDayChange(Check_Second, eventTime, currentTime)))
+	|| (eventTime[0] != '\0' && GetDayChange(Check_Second, eventTime, currentTime)))
 		return;
 
 	bool noticeDisable = g_KeyValue.GetValue(achievementId, "notice_disable", KvData_Int) > 0;
@@ -199,7 +200,7 @@ public int Native_SetComplete(Handle plugin, int numParams)
 	bool value = GetNativeCell(3), forced = GetNativeCell(4);
 	char achievementName[80];
 	GetNativeString(2, achievementName, sizeof(achievementName));
-	bool noticeDisable = g_KeyValue.GetValue(achievementId, "notice_disable", KvData_Int) > 0;
+	bool noticeDisable = g_KeyValue.GetValue(achievementName, "notice_disable", KvData_Int) > 0;
 
 	if(!GetComplete(client, achievementName, false) && value)
 	{
