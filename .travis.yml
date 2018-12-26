@@ -21,9 +21,9 @@ before_script:
     - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc" -O include/morecolors.inc
     - chmod +x spcomp
 script:
-    - ./compile.sh sa_subplugins/*.sp
     - mkdir compiled/sa_subplugins
-    - mv compiled/*.smx compiled/sa_subplugins/*.smx
+    - ./compile.sh sa_subplugins/*.sp
+    # - mv compiled/*.smx compiled/sa_subplugins/*.smx
     # - wget "https://raw.githubusercontent.com/TeamPotry/FF2_Fork/2.2/sourcemod/scripting/include/freak_fortress_2.inc" -O include/freak_fortress_2.inc
 
     - ./compile.sh serverside_achievement.sp
