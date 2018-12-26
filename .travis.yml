@@ -31,7 +31,7 @@ script:
 # Releases
 before_deploy:
     - cd ../
-    - mkdir serverside_achievement serverside_achievement/addons serverside_achievement/addons/sourcemod serverside_achievement/addons/sourcemod/configs serverside_achievement/addons/sourcemod/configs/serverside_achievement serverside_achievement/addons/sourcemod/data serverside_achievement/addons/sourcemod/data/serverside_achievement serverside_achievement/addons/sourcemod/scripting serverside_achievement/addons/sourcemod/scripting/serverside_achievement serverside_achievement/addons/sourcemod/scripting/sa_subplugins serverside_achievement/addons/sourcemod/scripting/include serverside_achievement/addons/sourcemod/plugins serverside_achievement/addons/sourcemod/plugins/sa_subplugins serverside_achievement/addons/sourcemod/translations
+    - mkdir serverside_achievement serverside_achievement/addons serverside_achievement/addons/sourcemod serverside_achievement/addons/sourcemod/configs serverside_achievement/addons/sourcemod/configs/serverside_achievement serverside_achievement/addons/sourcemod/data serverside_achievement/addons/sourcemod/data/serverside_achievement serverside_achievement/addons/sourcemod/scripting serverside_achievement/addons/sourcemod/scripting/serverside_achievement serverside_achievement/addons/sourcemod/scripting/sa_subplugins serverside_achievement/addons/sourcemod/scripting/include serverside_achievement/addons/sourcemod/plugins serverside_achievement/addons/sourcemod/translations
     - mv configs/serverside_achievement serverside_achievement/addons/sourcemod/configs/serverside_achievement
     - mv data/serverside_achievement serverside_achievement/addons/sourcemod/data/serverside_achievement
 
