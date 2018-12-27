@@ -37,7 +37,9 @@ before_deploy:
 
     - mv scripting/serverside_achievement.sp serverside_achievement/addons/sourcemod/scripting/
     - mv scripting/sa_subplugins serverside_achievement/addons/sourcemod/scripting/sa_subplugins
-    - mv scripting/compiled serverside_achievement/addons/sourcemod/plugins
+
+    - mv scripting/compiled/serverside_achievement.smx serverside_achievement/addons/sourcemod/plugins
+    - mv scripting/compiled/sa_subplugins serverside_achievement/addons/sourcemod/plugins/sa_subplugins
 
     - mv translations/serverside_achievement.txt serverside_achievement/addons/sourcemod/translations/
     - zip -rq serverside_achievement serverside_achievement
