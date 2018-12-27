@@ -30,7 +30,7 @@ public void OnClientPostAdminCheck(int client)
 
 public Action TestTimer(Handle timer, any client)
 {
-	if(!IsClientInGame(client))		return Plugin_Stop;
+	if(!IsClientInGame(client) || IsFakeClient(client))		return Plugin_Stop;
 
 	SA_AddProcessMeter(client, "no_life", 1);
 	return Plugin_Continue;
