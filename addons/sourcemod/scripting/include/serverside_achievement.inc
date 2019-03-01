@@ -3,19 +3,27 @@
 #endif
 #define __serverside_achievement_included
 
+methodmap SAPlayer {
+    public static SAPlayer Load(int client) {
+        return view_as<SAPlayer>(client);
+    }
+
+    public native int GetProcessMeter(const char[] achievementId);
+
+    public native void AddProcessMeter(const char[] achievementId, int value);
+
+
+    public native bool GetComplete(const char[] achievementId, bool &forced);
+
+    public native void SetComplete(const char[] achievementId, bool value, bool forced = false);
+}
+
 /*
     Create temporary achievement.
     This achievement's KeyValues will add keys "notice_disable" = 1, "menu_display_disable" = 1
 */
 native void SA_CreateTemporaryAchievement(const char[] achievementId, int maxProcessInteger);
 
-native int SA_GetProcessMeter(int client, const char[] achievementId);
-
-native void SA_AddProcessMeter(int client, const char[] achievementId, int value);
-
-native bool SA_GetComplete(int client, const char[] achievementId, bool &forced);
-
-native void SA_SetComplete(int client, const char[] achievementId, bool value, bool forced = false);
 
 forward void SA_OnLoadedAchievements();
 
@@ -37,9 +45,9 @@ public SharedPlugin __pl_serverside_achievement=
 public __pl_serverside_achievement_SetNTVOptional()
 {
     MarkNativeAsOptional("SA_CreateTemporaryAchievement");
-    MarkNativeAsOptional("SA_GetProcessMeter");
-    MarkNativeAsOptional("SA_AddProcessMeter");
-    MarkNativeAsOptional("SA_GetComplete");
-    MarkNativeAsOptional("SA_SetComplete");
+    MarkNativeAsOptional("SAPlayer.GetProcessMeter");
+    MarkNativeAsOptional("SAPlayer.AddProcessMeter");
+    MarkNativeAsOptional("SAPlayer.GetComplete");
+    MarkNativeAsOptional("SAPlayer.SetComplete");
 }
 #endif

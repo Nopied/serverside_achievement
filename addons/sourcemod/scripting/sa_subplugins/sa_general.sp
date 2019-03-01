@@ -30,24 +30,26 @@ public void OnPluginStart()
 
 public void OnClientPostAdminCheck(int client)
 {
-    if(IsFakeClient(client)) return;
+	if(IsFakeClient(client)) return;
 
-    arrowHolder[client] = 0;
-    for(int loop = 0;  loop < 10; loop++)
-    {
-        panKillClasses[client][loop] = false;
-    }
+	SAPlayer playerData = SAPlayer.Load(client);
+	arrowHolder[client] = 0;
+	for(int loop = 0;  loop < 10; loop++)
+	{
+	panKillClasses[client][loop] = false;
+	}
 
-    SA_AddProcessMeter(client, "daily_stamp", 1);
+	playerData.AddProcessMeter("daily_stamp", 1);
 
-    CreateTimer(1.0, TestTimer, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(1.0, TestTimer, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action TestTimer(Handle timer, any client)
 {
 	if(!IsClientInGame(client))		return Plugin_Stop;
+	SAPlayer playerData = SAPlayer.Load(client);
 
-	SA_AddProcessMeter(client, "plz_drop_the_life", 1);
+	playerData.AddProcessMeter("plz_drop_the_life", 1);
 	return Plugin_Continue;
 }
 
@@ -71,7 +73,7 @@ public Action OnArrowImpact(Event event, const char[] name, bool dontBroadcast)
 
     arrowHolder[client]++;
     if(arrowHolder[client] >= 8)
-        SA_SetComplete(client, "needle_holder", true);
+        (SAPlayer.Load(client)).SetComplete("needle_holder", true);
 
     return Plugin_Continue;
 }
@@ -108,7 +110,7 @@ public Action DeflectAliveTimer(Handle timer, ArrayList array)
 	{
 		target = array.Get(loop);
 		if(IsClientInGame(target) && IsPlayerAlive(target))
-			SA_AddProcessMeter(target, "saved_by_airblast", 1);
+			(SAPlayer.Load(target)).AddProcessMeter("saved_by_airblast", 1);
 	}
 
 	delete array;
@@ -136,16 +138,16 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
             if(TF2_GetPlayerClass(client) == TFClass_Scout &&
             (weaponId == TF_WEAPON_FLAMETHROWER || weaponId == TF_WEAPON_FLAME_BALL))
             {
-                SA_AddProcessMeter(attacker, "burning_insecticide", 1);
+                (SAPlayer.Load(client)).AddProcessMeter("burning_insecticide", 1);
             }
             if(weaponIndex == 264)
                 panKillClasses[attacker][view_as<int>(TF2_GetPlayerClass(client))] = true;
 
             if(stunFlags > 0)
-                SA_AddProcessMeter(attacker, "ball_good", 1);
+                (SAPlayer.Load(client)).AddProcessMeter("ball_good", 1);
 
             if(TF2_IsPlayerInDuel(client))
-                SA_AddProcessMeter(attacker, "duel_disturb", 1);
+                (SAPlayer.Load(client)).AddProcessMeter("duel_disturb", 1);
         }
 
         // 완료 확인
@@ -155,7 +157,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 				break;
 
 			if(loop == 9)
-				SA_SetComplete(attacker, "pan", true);
+				(SAPlayer.Load(client)).SetComplete("pan", true);
         }
     }
 }
