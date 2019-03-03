@@ -45,8 +45,8 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		&& !IsFakeClient(attacker))
 		if(!(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
-			(SAPlayer.Load(client)).AddProcessMeter("first_kill", 1);
-			(SAPlayer.Load(client)).AddProcessMeter("kill_spree", 1);
-			(SAPlayer.Load(client)).AddProcessMeter("kill_spree_2", 1);
+			(SAPlayer.Load(attacker)).AddProcessMeter("first_kill", 1);
+			(SAPlayer.Load(attacker)).AddProcessMeter("kill_spree", 1);
+			(SAPlayer.Load(attacker)).AddProcessMeter("kill_spree_2", 1);
 		}
 }
