@@ -11,11 +11,9 @@ void AddProcessMeter(int client, char[] achievementId, int value)
 		return;
 
 	bool noticeDisable = g_KeyValue.GetValue(achievementId, "notice_disable", KvData_Int) > 0;
-	LoadedPlayerData[client].GoToAchievementData(achievementId, true);
-
-	int beforeValue = LoadedPlayerData[client].GetNum("process_integer", 0);
+	int beforeValue = GetProcessMeter(client, achievementId);
 	value += beforeValue;
-	LoadedPlayerData[client].SetNum("process_integer", value);
+	SetProcessMeter(client, achievementId, value);
 
 	// 프로세스 미터가 컨픽의 맥스 프로세스 미터에 충족하면 도전과제 완료.
 	if(g_KeyValue.GetValue(achievementId, "only_set_by_plugin", KvData_Int) <= 0
@@ -46,8 +44,12 @@ void AddProcessMeter(int client, char[] achievementId, int value)
 
 int GetProcessMeter(int client, char[] achievementId)
 {
-	LoadedPlayerData[client].GoToAchievementData(achievementId);
-	return LoadedPlayerData[client].GetNum("process_integer", 0);
+	return GetPlayerData(client, achievementId, "process_integer");
+}
+
+void SetProcessMeter(int client, char[] achievementId, int value)
+{
+	SetPlayerData(client, achievementId, "process_integer", value);
 }
 
 void NoticeCompleteToAll(int client, char[] achievementId)
@@ -68,21 +70,47 @@ void NoticeCompleteToAll(int client, char[] achievementId)
 
 public bool GetComplete(const int client, const char[] achievementId, bool forced)
 {
-	LoadedPlayerData[client].GoToAchievementData(achievementId);
-	forced = LoadedPlayerData[client].GetNum("is_completed_by_force", 0) > 0;
-	return LoadedPlayerData[client].GetNum("completed", 0) > 0;
+	forced = GetPlayerData(client, achievementId, "is_completed_by_force") > 0;
+	return GetPlayerData(client, achievementId, "completed") > 0;
 }
 
 public void SetComplete(const int client, const char[] achievementId, bool value, bool forced)
 {
-	LoadedPlayerData[client].GoToAchievementData(achievementId, true);
 	char temp[64];
 
-	LoadedPlayerData[client].SetNum("completed", value ? 1 : 0);
-	LoadedPlayerData[client].SetNum("is_completed_by_force", forced ? 1 : 0);
+	SetPlayerData(client, achievementId, "completed", value ? 1 : 0);
+	SetPlayerData(client, achievementId, "is_completed_by_force", forced ? 1 : 0);
 
 	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
-	LoadedPlayerData[client].SetString("completed_time", temp);
+	SetPlayerStringData(client, achievementId, "completed_time", temp);
+}
+
+public any GetPlayerData(int client, const char[] achievementId, const char[] key)
+{
+	return (DBSPlayerData.GetClientData(client)).GetData(SADATABASE_CONFIG_NAME, SA_TABLENAME, achievementId, key);
+}
+
+public void GetPlayerStringData(int client, const char[] achievementId, const char[] key, char[] value, int buffer)
+{
+	(DBSPlayerData.GetClientData(client)).GetData(SADATABASE_CONFIG_NAME, SA_TABLENAME, achievementId, key, value, buffer);
+}
+
+public void SetPlayerData(int client, const char[] achievementId, const char[] key, any value)
+{
+	char temp[64];
+	(DBSPlayerData.GetClientData(client)).SetData(SADATABASE_CONFIG_NAME, SA_TABLENAME, achievementId, key, value);
+
+	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
+	SetPlayerStringData(client, achievementId, "completed_time", temp);
+}
+
+public void SetPlayerStringData(int client, const char[] achievementId, const char[] key, char[] value)
+{
+	char temp[64];
+	(DBSPlayerData.GetClientData(client)).SetStringData(SADATABASE_CONFIG_NAME, SA_TABLENAME, achievementId, key, value);
+
+	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
+	(DBSPlayerData.GetClientData(client)).SetStringData(SADATABASE_CONFIG_NAME, SA_TABLENAME, achievementId, "completed_time", temp);
 }
 
 void CreateTemporaryAchievement(char[] achievementId, int maxProcessInteger)

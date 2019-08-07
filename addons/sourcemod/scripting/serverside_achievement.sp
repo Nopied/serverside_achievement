@@ -2,6 +2,10 @@
 #include <morecolors>
 #include <serverside_achievement>
 
+#undef REQUIRE_PLUGIN
+#include <db_simple>
+#define REQUIRE_PLUGIN
+
 #include "serverside_achievement/stocks.sp"
 
 #include "serverside_achievement/database.sp"
@@ -24,14 +28,8 @@ public Plugin myinfo=
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	// serverside_achievement/database.sp
-	DB_Native_Init();
-
 	// serverside_achievement/configs.sp
 	KV_Native_Init();
-
-	// serverside_achievement/global_vars.sp
-	Data_Native_Init();
 
 	// forward and natives.
 	OnLoadedAchievements = CreateGlobalForward("SA_OnLoadedAchievements", ET_Ignore);
@@ -50,34 +48,16 @@ public void OnPluginStart()
 {
 	RegConsoleCmd("list", ListCmd);
 	RegConsoleCmd("mylist", MyListCmd);
-	RegAdminCmd("sadatadump", DumpDataCmd, ADMFLAG_CHEATS);
 
 	LoadTranslations("serverside_achievement");
 }
 
 public void OnMapStart()
 {
-	g_Database = new SADatabase();
-
 	if(g_KeyValue != null)
 		delete g_KeyValue;
 	g_KeyValue = new SAKeyValues();
 
 	Call_StartForward(OnLoadedAchievements);
 	Call_Finish();
-}
-
-public void OnClientAuthorized(int client, const char[] auth)
-{
-	if(IsFakeClient(client))	return;
-
-	LoadedPlayerData[client] = new SAPlayerData(client);
-}
-
-public void OnClientDisconnect(int client)
-{
-	if(IsFakeClient(client))	return;
-
-	LoadedPlayerData[client].Update();
-	delete LoadedPlayerData[client];
 }

@@ -48,47 +48,39 @@ public Action MyListCmd(int client, int args)
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 
 	int myScore, maxScore;
-	bool completed;
+	bool completed, forced;
 	Menu menu = new Menu(MyListMenu_Handler);
+	DBSPlayerData playerData = DBSPlayerData.GetClientData(client);
+	ArrayList achievementIdArray = playerData.GetUniqueNames(SADATABASE_CONFIG_NAME, SA_TABLENAME);
 
-	LoadedPlayerData[client].Rewind();
-	if(!LoadedPlayerData[client].GotoFirstSubKey())
-	{
-		Format(text, sizeof(text), "%t", "Item Empty");
-		menu.AddItem("empty", text, ITEMDRAW_DISABLED);
-	}
-	else
-	{
-		Format(text, sizeof(text), "%t", "View Event", args > 0 ? "ON" : "OFF");
-		Format(temp, sizeof(temp), "%d", args);
-		menu.AddItem(temp, text);
+	Format(text, sizeof(text), "%t", "View Event", args > 0 ? "ON" : "OFF");
+	Format(temp, sizeof(temp), "%d", args);
+	menu.AddItem(temp, text);
 
-		do
+	for(int loop = 0; loop < achievementIdArray.Length; loop++)
+	{
+		achievementIdArray.GetString(loop, achievementId, sizeof(achievementId));
+
+		g_KeyValue.GetValue(achievementId, "event_end_datetime", KvData_String, eventTime, sizeof(eventTime));
+
+		maxScore += g_KeyValue.GetValue(achievementId, "score", KvData_Int);
+		completed = GetComplete(client, achievementId, forced);
+
+		g_KeyValue.SetLanguageSet(achievementId, languageId);
+		g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
+
+		if(completed)
 		{
-			LoadedPlayerData[client].GetSectionName(achievementId, sizeof(achievementId));
-
-			g_KeyValue.GetValue(achievementId, "event_end_datetime", KvData_String, eventTime, sizeof(eventTime));
-
-			maxScore += g_KeyValue.GetValue(achievementId, "score", KvData_Int);
-			completed = LoadedPlayerData[client].GetNum("completed") > 0;
-
-			g_KeyValue.SetLanguageSet(achievementId, languageId);
-			g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
-
-			if(completed)
-			{
-				Format(text, sizeof(text), "%s (%t)", text, "Completed");
-				myScore += g_KeyValue.GetValue(achievementId, "score", KvData_Int);
-			}
-
-			if(g_KeyValue.GetValue(achievementId, "menu_display_disable", KvData_Int) > 0
-			|| (!completed && g_KeyValue.GetValue(achievementId, "hidden", KvData_Int) > 0)
-			|| (args <= 0 && eventTime[0] != '\0'))
-				continue;
-
-			menu.AddItem(achievementId, text);
+			Format(text, sizeof(text), "%s (%t)", text, "Completed");
+			myScore += g_KeyValue.GetValue(achievementId, "score", KvData_Int);
 		}
-		while(LoadedPlayerData[client].GotoNextKey());
+
+		if(g_KeyValue.GetValue(achievementId, "menu_display_disable", KvData_Int) > 0
+		|| (!completed && g_KeyValue.GetValue(achievementId, "hidden", KvData_Int) > 0)
+		|| (args <= 0 && eventTime[0] != '\0'))
+			continue;
+
+		menu.AddItem(achievementId, text);
 	}
 
 	menu.SetTitle("%t\n - %t", "My List Menu Title", "My List Menu Score", myScore, maxScore);
@@ -126,42 +118,34 @@ public Action EventListCmd(int client, int args)
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 	FormatTime(currentTime, sizeof(currentTime), "%Y-%m-%d %H:%M:%S");
 
-	bool completed, expired;
+	bool completed, forced, expired;
 	Menu menu = new Menu(EventListMenu_Handler);
+	DBSPlayerData playerData = DBSPlayerData.GetClientData(client);
+	ArrayList achievementIdArray = playerData.GetUniqueNames(SADATABASE_CONFIG_NAME, SA_TABLENAME);
 
-	LoadedPlayerData[client].Rewind();
-	if(!LoadedPlayerData[client].GotoFirstSubKey())
+	Format(text, sizeof(text), "%t", "View Expired", args > 0 ? "ON" : "OFF");
+	Format(temp, sizeof(temp), "%d", args);
+	menu.AddItem(temp, text);
+
+	for(int loop = 0; loop < achievementIdArray.Length; loop++)
 	{
-		Format(text, sizeof(text), "%t", "Item Empty");
-		menu.AddItem("empty", text, ITEMDRAW_DISABLED);
-	}
-	else
-	{
-		Format(text, sizeof(text), "%t", "View Expired", args > 0 ? "ON" : "OFF");
-		Format(temp, sizeof(temp), "%d", args);
-		menu.AddItem(temp, text);
+		achievementIdArray.GetString(loop, achievementId, sizeof(achievementId));
 
-		do
-		{
-			LoadedPlayerData[client].GetSectionName(achievementId, sizeof(achievementId));
+		g_KeyValue.GetValue(achievementId, "event_end_datetime", KvData_String, eventTime, sizeof(eventTime));
+		if(eventTime[0] == '\0')	continue;
 
-			g_KeyValue.GetValue(achievementId, "event_end_datetime", KvData_String, eventTime, sizeof(eventTime));
-			if(eventTime[0] == '\0')	continue;
+		completed = GetComplete(client, achievementId, forced);
+		expired = GetDayChange(Check_Second, eventTime, currentTime);
 
-			completed = LoadedPlayerData[client].GetNum("completed") > 0;
-			expired = GetDayChange(Check_Second, eventTime, currentTime);
+		if(g_KeyValue.GetValue(achievementId, "menu_display_disable", KvData_Int) > 0
+		|| (!completed && g_KeyValue.GetValue(achievementId, "hidden", KvData_Int) > 0)
+		|| (expired && args <= 0))
+			continue;
 
-			if(g_KeyValue.GetValue(achievementId, "menu_display_disable", KvData_Int) > 0
-			|| (!completed && g_KeyValue.GetValue(achievementId, "hidden", KvData_Int) > 0)
-			|| (expired && args <= 0))
-				continue;
+		g_KeyValue.SetLanguageSet(achievementId, languageId);
+		g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
 
-			g_KeyValue.SetLanguageSet(achievementId, languageId);
-			g_KeyValue.GetValue("", "name", KvData_String, text, sizeof(text));
-
-			menu.AddItem(achievementId, text);
-		}
-		while(LoadedPlayerData[client].GotoNextKey());
+		menu.AddItem(achievementId, text);
 	}
 
 	menu.SetTitle("%t", "Event Menu Title");
@@ -202,10 +186,7 @@ void ViewAchievementInfo(int client, char[] achievementId)
 	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
 	FormatTime(currentTime, sizeof(currentTime), "%Y-%m-%d %H:%M:%S");
 
-	LoadedPlayerData[client].Rewind();
-	LoadedPlayerData[client].JumpToKey(achievementId);
-
-	bool completed = LoadedPlayerData[client].GetNum("completed", 0) > 0;
+	bool forced, completed = GetComplete(client, achievementId, forced);
 	bool hiddenDescription = g_KeyValue.GetValue(achievementId, "hidden_description", KvData_Int);
 
 	g_KeyValue.GetValue(achievementId, "event_end_datetime", KvData_String, eventTime, sizeof(eventTime));
@@ -227,14 +208,14 @@ void ViewAchievementInfo(int client, char[] achievementId)
 	if(completed)
 	{
 		// 완료한 시각
-		LoadedPlayerData[client].GetString("completed_time", temp, sizeof(temp), "EMPTY");
+		GetPlayerStringData(client, achievementId, "completed_time", temp, sizeof(temp));
 		Format(text, sizeof(text), "%t", "Completed Time", temp);
 		menu.AddItem("", text);
 	}
 	else
 	{
 		// 현재 달성률
-		Format(text, sizeof(text), "%t", "Current Process", LoadedPlayerData[client].GetNum("process_integer", 0), g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int));
+		Format(text, sizeof(text), "%t", "Current Process", GetPlayerData(client, achievementId, "process_integer"), g_KeyValue.GetValue(achievementId, "process_max_meter", KvData_Int));
 		menu.AddItem("", text);
 	}
 	menu.ExitButton = true;
@@ -244,21 +225,4 @@ void ViewAchievementInfo(int client, char[] achievementId)
 public int InfoMenu_Handler(Menu menu, MenuAction action, int client, int selection)
 {
 
-}
-
-public Action DumpDataCmd(int client, int args)
-{
-	if(!IsValidClient(client))	return Plugin_Continue;
-
-	char authId[25], dataFile[PLATFORM_MAX_PATH];
-	GetClientAuthId(client, AuthId_SteamID64, authId, 25);
-	BuildPath(Path_SM, dataFile, sizeof(dataFile), "data/sa_dump_%s.txt", authId);
-	// File file = OpenFile(dataFile, "a+");
-
-	LoadedPlayerData[client].Rewind();
-	if(LoadedPlayerData[client].ExportToFile(dataFile))
-		LogMessage("dumped %s's data.\n%s", authId, dataFile);
-
-	// delete file;
-	return Plugin_Continue;
 }
