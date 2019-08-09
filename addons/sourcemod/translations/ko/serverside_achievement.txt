@@ -16,6 +16,11 @@
         "ko"    "이벤트"
     }
 
+    "Achievement List Menu Title"
+    {
+        "ko"    "모든 도전과제 목록"
+    }
+
     "Event End Time"
     {
         "#format"   "{1:s}"

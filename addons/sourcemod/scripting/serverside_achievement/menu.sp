@@ -13,6 +13,9 @@ public Action ListCmd(int client, int args)
 	Format(text, sizeof(text), "%t", "Event Menu Title");
 	menu.AddItem("", text);
 
+	Format(text, sizeof(text), "%t", "Achievement List Menu Title");
+	menu.AddItem("", text);
+
 	menu.ExitButton = true;
 	menu.Display(client, 60);
 
@@ -32,6 +35,10 @@ public int ListMenu_Handler(Menu menu, MenuAction action, int client, int select
 			case 1:
 			{
 				EventListCmd(client, 0);
+			}
+			case 2:
+			{
+				AchievementListCmd(client, 0);
 			}
 		}
 	}
@@ -174,6 +181,49 @@ public int EventListMenu_Handler(Menu menu, MenuAction action, int client, int s
 	}
 }
 
+public Action AchievementListCmd(int client, int args)
+{
+	if(!IsValidClient(client))	return Plugin_Continue;
+	SetGlobalTransTarget(client);
+
+	char achievementId[80], display[128], languageId[4];
+
+	GetLanguageInfo(GetClientLanguage(client), languageId, 4);
+	Menu menu = new Menu(AchievementListMenu_Handler);
+	menu.SetTitle("%t", "Achievement List Menu Title");
+
+	g_KeyValue.Rewind();
+	if(g_KeyValue.GotoFirstSubKey())
+	{
+		do
+		{
+			g_KeyValue.GetSectionName(achievementId, sizeof(achievementId));
+
+			g_KeyValue.SetLanguageSet(achievementId, languageId);
+			g_KeyValue.GetValue("", "name", KvData_String, display, sizeof(display));
+
+			menu.AddItem(achievementId, display);
+			g_KeyValue.GoBack();
+		}
+		while(g_KeyValue.GotoNextKey());
+	}
+
+	menu.ExitButton = true;
+	menu.Display(client, 60);
+
+	return Plugin_Continue;
+}
+
+public int AchievementListMenu_Handler(Menu menu, MenuAction action, int client, int selection)
+{
+	if(action == MenuAction_Select)
+	{
+		char achievementId[80];
+		menu.GetItem(selection, achievementId, sizeof(achievementId));
+
+		ViewAchievementInfo(client, achievementId);
+	}
+}
 
 
 // TODO: 이벤트 도전과제는 기간 명시

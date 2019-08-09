@@ -8,12 +8,17 @@
 
     "List Menu Title"
     {
-        "en"    "Achievement List"
+        "en"    "My Achievement List"
     }
 
     "Event Menu Title"
     {
         "en"    "Event"
+    }
+
+    "Achievement List Menu Title"
+    {
+        "en"    "All Achievement List"
     }
 
     "Event End Time"
