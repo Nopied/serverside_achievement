@@ -50,6 +50,8 @@ int GetProcessMeter(int client, char[] achievementId)
 void SetProcessMeter(int client, char[] achievementId, int value)
 {
 	SetPlayerData(client, achievementId, "process_integer", value);
+
+	SetLastSavedTime(client, achievementId);
 }
 
 void NoticeCompleteToAll(int client, char[] achievementId)
@@ -83,6 +85,8 @@ public void SetComplete(const int client, const char[] achievementId, bool value
 
 	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
 	SetPlayerStringData(client, achievementId, "completed_time", temp);
+
+	SetLastSavedTime(client, achievementId);
 }
 
 public any GetPlayerData(int client, const char[] achievementId, const char[] key)
@@ -102,6 +106,8 @@ public void SetPlayerData(int client, const char[] achievementId, const char[] k
 
 	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
 	SetPlayerStringData(client, achievementId, "completed_time", temp);
+
+	SetLastSavedTime(client, achievementId);
 }
 
 public void SetPlayerStringData(int client, const char[] achievementId, const char[] key, char[] value)
@@ -111,6 +117,15 @@ public void SetPlayerStringData(int client, const char[] achievementId, const ch
 
 	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
 	(DBSPlayerData.GetClientData(client)).SetStringData(SADATABASE_CONFIG_NAME, SA_TABLENAME, achievementId, "completed_time", temp);
+
+	SetLastSavedTime(client, achievementId);
+}
+
+public void SetLastSavedTime(int client, const char[] achievementId)
+{
+	char temp[64];
+	FormatTime(temp, sizeof(temp), "%Y-%m-%d %H:%M:%S");
+	(DBSPlayerData.GetClientData(client)).SetStringData(SADATABASE_CONFIG_NAME, SA_TABLENAME, achievementId, "last_saved_time", temp);
 }
 
 void CreateTemporaryAchievement(char[] achievementId, int maxProcessInteger)
