@@ -211,7 +211,7 @@ public Action OnPlayerHealed(Event event, const char[] name, bool dontBroadcast)
 	int healer = GetClientOfUserId(event.GetInt("healer"));
 	// int healed = event.GetInt("amount");
 
-	if(g_flHealLastTime[healer] <= GetGameTime()) {
+	if(IsValidClient(healer) && IsFakeClient(healer) && g_flHealLastTime[healer] <= GetGameTime()) {
 		g_flHealLastTime[healer] = GetGameTime() + 1.0;
 		(SAPlayer.Load(healer)).AddProcessMeter("heal_master", 1);
 	}
