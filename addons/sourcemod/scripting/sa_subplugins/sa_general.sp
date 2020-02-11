@@ -56,6 +56,8 @@ public void OnClientPostAdminCheck(int client)
 
 public Action OnTakeDamageAlive(int client, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
+	if(IsFakeClient(client)) return Plugin_Continue;
+
 	if(damagecustom == TF_CUSTOM_CHARGE_IMPACT)
 		(SAPlayer.Load(attacker)).AddProcessMeter("runaway_train", RoundFloat(damage));
 
@@ -152,7 +154,7 @@ public Action DeflectAliveTimer(Handle timer, ArrayList array)
 	for(int loop = 0; loop < array.Length ; loop++)
 	{
 		target = array.Get(loop);
-		if(IsClientInGame(target) && IsPlayerAlive(target))
+		if(IsClientInGame(target) && IsPlayerAlive(target) && !IsFakeClient(target))
 			(SAPlayer.Load(target)).AddProcessMeter("saved_by_airblast", 1);
 	}
 
@@ -174,7 +176,7 @@ public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
     int weaponId = event.GetInt("weaponid"), weaponIndex = event.GetInt("weapon_def_index");
     int stunFlags = event.GetInt("stun_flags");
 
-    if(attacker > 0 && client != attacker && !IsFakeClient(attacker))
+    if(attacker > 0 && client != attacker && !IsFakeClient(attacker) && !IsFakeClient(client))
     {
         if(!(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER))
         {
@@ -211,7 +213,7 @@ public Action OnPlayerHealed(Event event, const char[] name, bool dontBroadcast)
 	int healer = GetClientOfUserId(event.GetInt("healer"));
 	// int healed = event.GetInt("amount");
 
-	if(IsValidClient(healer) && IsFakeClient(healer) && g_flHealLastTime[healer] <= GetGameTime()) {
+	if(IsValidClient(healer) && !IsFakeClient(healer) && g_flHealLastTime[healer] <= GetGameTime()) {
 		g_flHealLastTime[healer] = GetGameTime() + 1.0;
 		(SAPlayer.Load(healer)).AddProcessMeter("heal_master", 1);
 	}
